@@ -2,7 +2,7 @@
 
 ## Convex + Better Auth + Expo (React Native) + Hero UI Native
 
-This project was bootstrapped with **[Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack)**, a modern TypeScript stack combining Convex, Expo/React Native, Tailwind (NativeWind), Turborepo, and more. For architecture and deeper patterns, refer to the Better-T-Stack repo and docs.
+This project was bootstrapped with **[Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack)**, a modern TypeScript stack combining Convex, Expo/React Native, Tailwind (Uniwind), Turborepo, and more. For architecture and deeper patterns, refer to the Better-T-Stack repo and docs.
 
 > To reproduce a similar starter, run:
 >
@@ -24,8 +24,8 @@ This project was bootstrapped with **[Better-T-Stack](https://github.com/AmanVar
 
 * **TypeScript** — static typing for safety and DX
 * **[React Native (Expo)](https://expo.dev/)** — SDK 55
-* **[Tailwind (NativeWind)](https://www.nativewind.dev/)** — Tailwind for React Native
-* **[Hero UI Native](https://heroui.com/docs/native)** — modern React Native UI library 🚧 *RC*
+* **[Tailwind (Uniwind)](https://uniwind.dev/)** — Tailwind CSS v4 for React Native
+* **[Hero UI Native](https://v3.heroui.com/docs/native/getting-started)** — modern React Native UI library 🚧 *Beta*
 * **[Convex](https://docs.convex.dev/)** — reactive backend-as-a-service
 * **[Better Auth](https://convex-better-auth.netlify.app/)** — auth primitives on Convex
 * **[Biome](https://biomejs.dev/)** — fast formatting and linting
