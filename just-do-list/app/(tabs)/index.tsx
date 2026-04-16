@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import {
   View,
   TextInput,
@@ -6,17 +7,55 @@ import {
   Text,
   FlatList,
   StyleSheet,
+  Pressable,
+  Alert,
 } from "react-native";
 
 export default function HomeScreen() {
+  type Task = {
+    id: string;
+    text: string;
+    completed: boolean;
+  };
+
   const [input, setInput] = useState("");
-  const [tasks, setTasks] = useState<string[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
 
   const addTask = () => {
     const newTask = input.trim();
     if (newTask === "") return;
-    setTasks([...tasks, newTask]);
+    setTasks([
+      ...tasks,
+      { id: Date.now().toString(), text: newTask, completed: false },
+    ]);
     setInput("");
+  };
+
+  const toggleTask = (id: string) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === id ? { ...task, completed: !task.completed } : task,
+      ),
+    );
+  };
+
+  const deleteTask = (id: string) => {
+    Alert.alert(
+      "Delete Task",
+      "Are you sure you want to delete this task?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () =>
+            setTasks((prev) => prev.filter((task) => task.id !== id)),
+        },
+      ],
+      {
+        cancelable: true,
+      },
+    );
   };
 
   return (
@@ -32,11 +71,16 @@ export default function HomeScreen() {
       <Button title="Add" onPress={addTask} />
       <FlatList
         data={tasks}
-        keyExtractor={(task, index) => task + index.toString()}
+        keyExtractor={(task) => task.id}
         renderItem={({ item, index }) => (
-          <Text style={styles.task}>
-            <Text style={styles.taskNumber}>{index + 1}.</Text> {item}
-          </Text>
+          <Pressable
+            onPress={() => toggleTask(item.id)}
+            onLongPress={() => deleteTask(item.id)}
+          >
+            <Text style={styles.task}>
+              {item.completed ? "✅" : "⬜"} {item.text}
+            </Text>
+          </Pressable>
         )}
       />
     </View>
