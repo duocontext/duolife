@@ -1,50 +1,55 @@
 {
-	"expo": {
-		"name": "My App",
-		"slug": "myapp",
-		"version": "1.0.0",
-		"scheme": "myapp",
-		"orientation": "portrait",
-		"icon": "./assets/icon.png",
-		"userInterfaceStyle": "automatic",
-		"web": {
-			"bundler": "metro",
-			"output": "static",
-			"favicon": "./assets/favicon.png"
-		},
-		"plugins": [
-			[
-				"expo-splash-screen",
-				{
-					"backgroundColor": "#ffffff",
-					"image": "./assets/logo-b.png",
-					"dark": {
-						"image": "./assets/logo-w.png",
-						"backgroundColor": "#000000"
-					}
-				}
-			],
-			"expo-apple-authentication",
-			"expo-font",
-			"expo-secure-store",
-			"expo-web-browser"
-		],
-		"experiments": {
-			"typedRoutes": true,
-			"reactCompiler": true
-		},
-		"ios": {
-			"bundleIdentifier": "com.example.myapp",
-			"infoPlist": {
-				"ITSAppUsesNonExemptEncryption": false
-			}
-		},
-		"android": {
-			"adaptiveIcon": {
-				"foregroundImage": "./assets/adaptive-icon.png",
-				"backgroundColor": "#ffffff"
-			},
-			"package": "com.example.myapp"
-		}
-	}
+  "expo": {
+    "name": "Duolife",
+    "slug": "duolife",
+    "version": "1.0.0",
+    "scheme": "duolife",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#ffffff",
+          "image": "./assets/logo-b.png",
+          "dark": {
+            "image": "./assets/logo-w.png",
+            "backgroundColor": "#000000"
+          }
+        }
+      ],
+      "expo-apple-authentication",
+      "expo-font",
+      "expo-secure-store",
+      "expo-web-browser"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "ios": {
+      "bundleIdentifier": "com.duocontext.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.duocontext.app"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "0031a987-6fad-4ba1-892b-e55eade2294e"
+      }
+    }
+  }
 }
