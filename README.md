@@ -1,4 +1,4 @@
-# Convexpo
+# Duolife
 
 ## Convex + Better Auth + Expo (React Native) + Hero UI Native
 
@@ -34,7 +34,7 @@ This project was bootstrapped with **[Better-T-Stack](https://github.com/AmanVar
 ## Project Structure
 
 ```text
-convexpo/
+duolife/
 ├─ apps/
 │  └─ native/          # Expo App
 └─ packages/

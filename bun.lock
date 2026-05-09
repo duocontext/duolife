@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "app",
+      "name": "duolife",
       "dependencies": {
         "@app/env": "workspace:*",
         "dotenv": "^17.4.2",

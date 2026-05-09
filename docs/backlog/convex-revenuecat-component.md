@@ -483,7 +483,7 @@ In the RevenueCat dashboard under Integrations > Webhooks:
 - **Option A: Local component** -- Define the component directly in the
   monorepo (e.g., `packages/revenuecat-component/`). Faster to iterate,
   no publishing step, but coupled to this project.
-- **Option B: npm package** -- Publish as `@convexpo/convex-revenuecat` (or
+- **Option B: npm package** -- Publish as `@duocontext/convex-revenuecat` (or
   similar). Reusable across projects, follows the same distribution model
   as `@convex-dev/better-auth`.
 - **Recommendation:** Start as a local component, extract to npm later if it

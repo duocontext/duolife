@@ -24,7 +24,7 @@ export default function Landing() {
       </View>
       <View className="flex-1 justify-end">
         <Text className="font-extrabold text-6xl text-foreground">
-          Convexpo
+          Duolife
         </Text>
       </View>
       {/* OAuth buttons */}
