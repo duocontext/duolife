@@ -1,11 +1,13 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
-import type { PlayerStats, Quest } from "../types";
+import type { CaptureNote, PlayerStats, Quest } from "../types";
 import { CaptureBar } from "./CaptureBar";
+import { CapturedNotes } from "./CapturedNotes";
 import { PlayerHeader } from "./PlayerHeader";
 import { QuestCard } from "./QuestCard";
 import { TimerCard } from "./TimerCard";
 
 type QuestHomeScreenProps = {
+	captureNotes: CaptureNote[];
 	quest: Quest;
 	stats: PlayerStats;
 	onBack: () => void;
@@ -14,6 +16,7 @@ type QuestHomeScreenProps = {
 };
 
 export function QuestHomeScreen({
+	captureNotes,
 	quest,
 	stats,
 	onBack,
@@ -35,6 +38,7 @@ export function QuestHomeScreen({
 				<PlayerHeader stats={stats} />
 				<QuestCard quest={quest} />
 				<TimerCard isRunning={isRunning} quest={quest} onLockIn={onLockIn} />
+				<CapturedNotes notes={captureNotes} />
 			</ScrollView>
 
 			<CaptureBar onPress={onCapturePress} />

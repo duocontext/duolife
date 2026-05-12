@@ -13,6 +13,7 @@ export default function DemoRoute() {
 		<View className="flex-1 bg-background px-8 pt-safe pb-safe">
 			{game.hasStarted ? (
 				<QuestHomeScreen
+					captureNotes={game.captureNotes}
 					quest={game.quest}
 					stats={game.stats}
 					onBack={() => router.back()}
