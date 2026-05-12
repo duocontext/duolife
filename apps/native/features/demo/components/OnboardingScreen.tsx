@@ -1,12 +1,5 @@
-import { Button } from "heroui-native";
-import {
-	Image,
-	Pressable,
-	ScrollView,
-	Text,
-	TextInput,
-	View,
-} from "react-native";
+import { Button, Card, InputGroup, TextField } from "heroui-native";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { PLATFORM_OPTIONS } from "../data";
 import type { Platform } from "../types";
 
@@ -52,33 +45,39 @@ export function OnboardingScreen({
 					/>
 				</View>
 
-				<View className="gap-3 rounded-3xl bg-foreground/10 p-5">
-					<Text className="font-bold text-foreground">Goal</Text>
-					<TextInput
-						className="rounded-2xl bg-background/60 p-4 text-foreground"
-						onChangeText={onChangeGoal}
-						placeholder="Launch my landing page"
-						placeholderTextColor="#737373"
-						value={goalText}
-					/>
-				</View>
+				<Card variant="secondary">
+					<Card.Body className="gap-3">
+						<Card.Title>Goal</Card.Title>
+						<TextField>
+							<InputGroup>
+								<InputGroup.Input
+									onChangeText={onChangeGoal}
+									placeholder="Launch my landing page"
+									value={goalText}
+								/>
+							</InputGroup>
+						</TextField>
+					</Card.Body>
+				</Card>
 
-				<View className="gap-3 rounded-3xl bg-foreground/10 p-5">
-					<Text className="font-bold text-foreground">Main stage</Text>
-					<View className="flex-row flex-wrap gap-2">
-						{PLATFORM_OPTIONS.map((option) => (
-							<PlatformPill
-								isSelected={platform === option}
-								key={option}
-								label={option}
-								onPress={() => onSelectPlatform(option)}
-							/>
-						))}
-					</View>
-				</View>
+				<Card variant="secondary">
+					<Card.Body className="gap-3">
+						<Card.Title>Main stage</Card.Title>
+						<View className="flex-row flex-wrap gap-2">
+							{PLATFORM_OPTIONS.map((option) => (
+								<PlatformPill
+									isSelected={platform === option}
+									key={option}
+									label={option}
+									onPress={() => onSelectPlatform(option)}
+								/>
+							))}
+						</View>
+					</Card.Body>
+				</Card>
 
 				<Button className="w-full" size="lg" onPress={onStart}>
-					<Button.Label>Start First Quest</Button.Label>
+					Start First Quest
 				</Button>
 			</View>
 		</ScrollView>
