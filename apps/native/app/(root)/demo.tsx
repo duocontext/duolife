@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import { View } from "react-native";
+import { CaptureSheet } from "@/features/demo/components/CaptureSheet";
 import { OnboardingScreen } from "@/features/demo/components/OnboardingScreen";
 import { QuestHomeScreen } from "@/features/demo/components/QuestHomeScreen";
 import { useDemoGame } from "@/features/demo/useDemoGame";
@@ -15,7 +16,7 @@ export default function DemoRoute() {
 					quest={game.quest}
 					stats={game.stats}
 					onBack={() => router.back()}
-					onCapturePress={() => {}}
+					onCapturePress={game.openCapture}
 					onLockIn={game.lockIn}
 				/>
 			) : (
@@ -28,6 +29,15 @@ export default function DemoRoute() {
 					onStart={game.startFirstQuest}
 				/>
 			)}
+			<CaptureSheet
+				isOpen={game.isCaptureOpen}
+				tag={game.captureTag}
+				text={game.captureText}
+				onChangeText={game.setCaptureText}
+				onOpenChange={game.setIsCaptureOpen}
+				onSave={game.saveCapture}
+				onSelectTag={game.setCaptureTag}
+			/>
 		</View>
 	);
 }
