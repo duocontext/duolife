@@ -26,7 +26,6 @@ export default function DemoRoute() {
 					setup={game.setup}
 					onBack={() => router.back()}
 					onContinue={game.continueFromOnboarding}
-					onToggleProofType={game.toggleProofType}
 					onUpdateSetup={game.updateSetup}
 				/>
 			) : null}
