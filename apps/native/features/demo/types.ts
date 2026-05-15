@@ -1,33 +1,106 @@
 import type { ComponentProps } from "react";
 import type { Icon } from "@/components/icon";
 
-export type Platform = "X" | "IG" | "YouTube" | "Personal";
+export type MvpScreen =
+	| "onboarding"
+	| "mission-builder"
+	| "today"
+	| "sprint"
+	| "proof-upload"
+	| "post-proof"
+	| "run-it-back"
+	| "profile";
 
-export type QuestStatus = "ready" | "running" | "shipped" | "complete";
+export type IdentityType =
+	| "Founder"
+	| "Creator"
+	| "Student builder"
+	| "Engineer"
+	| "Designer"
+	| "Custom";
 
-export type Quest = {
+export type GoalType =
+	| "Ship my startup MVP"
+	| "Grow my audience"
+	| "Get better at coding"
+	| "Study consistently"
+	| "Build a portfolio"
+	| "Custom";
+
+export type ProofType =
+	| "Screenshot"
+	| "Video"
+	| "Link"
+	| "Text"
+	| "Voice"
+	| "Commit"
+	| "Figma";
+
+export type MissionStatus =
+	| "draft"
+	| "active"
+	| "shipped"
+	| "frozen"
+	| "failed";
+
+export type Mission = {
 	id: string;
 	title: string;
-	description: string;
 	proofTarget: string;
 	timeboxMinutes: number;
-	xp: number;
-	status: QuestStatus;
+	status: MissionStatus;
+	createdAt: string;
+	startedAt?: string;
+	completedAt?: string;
+};
+
+export type SetupContext = {
+	identityType: IdentityType | "";
+	goal: GoalType | "";
+	preferredProofTypes: ProofType[];
+	customIdentity: string;
+	customGoal: string;
+};
+
+export type Proof = {
+	id: string;
+	missionId: string;
+	type: ProofType;
+	content: string;
+	reflection: string;
+	createdAt: string;
+};
+
+export type GeneratedPost = {
+	id: string;
+	platform: string;
+	text: string;
+};
+
+export type PostState = {
+	id: string;
+	missionId: string;
+	proofId: string;
+	selectedPostId: string;
+	copied: boolean;
+	markedPosted: boolean;
+	postUrl?: string;
+	createdAt: string;
 };
 
 export type PlayerStats = {
-	level: number;
-	xp: number;
-	buildStreak: number;
-	shareStreak: number;
+	currentShipStreak: number;
+	currentPostStreak: number;
+	proofShippedThisWeek: number;
+	frozenCount: number;
+	rank: "Locked-In Rookie" | "Shipper" | "Public Builder" | "Operator";
 };
 
-export type CaptureTag = "Idea" | "Task" | "Proof note" | "Content hook";
-
-export type CaptureNote = {
+export type RecentProof = {
 	id: string;
+	title: string;
 	text: string;
-	tag: CaptureTag;
+	status: "shipped" | "posted" | "frozen";
 };
 
 export type StatIconName = ComponentProps<typeof Icon>["name"];

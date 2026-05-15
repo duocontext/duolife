@@ -1,47 +1,177 @@
-import { Pressable, ScrollView, Text, View } from "react-native";
-import type { CaptureNote, PlayerStats, Quest } from "../types";
-import { CaptureBar } from "./CaptureBar";
-import { CapturedNotes } from "./CapturedNotes";
-import { PlayerHeader } from "./PlayerHeader";
-import { QuestCard } from "./QuestCard";
-import { TimerCard } from "./TimerCard";
+import { Text, View } from "react-native";
+import {
+	GameButton,
+	GameCard,
+	GameScreen,
+	lifeColors,
+	ScreenHeader,
+	SectionLabel,
+	StatusPill,
+} from "@/components/game-ui";
+import { Icon } from "@/components/icon";
+import type { Mission, PlayerStats } from "../types";
 
 type QuestHomeScreenProps = {
-	captureNotes: CaptureNote[];
-	quest: Quest;
+	mission: Mission | null;
 	stats: PlayerStats;
 	onBack: () => void;
-	onCapturePress: () => void;
+	onBuildMission: () => void;
+	onEditMission: () => void;
 	onLockIn: () => void;
+	onShrinkMission: () => void;
+	onViewProfile: () => void;
 };
 
 export function QuestHomeScreen({
-	captureNotes,
-	quest,
+	mission,
 	stats,
 	onBack,
-	onCapturePress,
+	onBuildMission,
+	onEditMission,
 	onLockIn,
+	onShrinkMission,
+	onViewProfile,
 }: QuestHomeScreenProps) {
-	const isRunning = quest.status === "running";
+	const canLockIn = Boolean(mission?.proofTarget && mission?.timeboxMinutes);
 
 	return (
-		<View className="flex-1">
-			<ScrollView
-				showsVerticalScrollIndicator={false}
-				contentContainerClassName="gap-5 pb-8 pt-4"
-			>
-				<Pressable onPress={onBack} hitSlop={24}>
-					<Text className="text-foreground text-lg">← Back</Text>
-				</Pressable>
+		<GameScreen>
+			<ScreenHeader
+				title="Today's Mission"
+				eyebrow="One proof target"
+				onBack={onBack}
+				right={<StreakPill streak={stats.currentShipStreak} />}
+			/>
 
-				<PlayerHeader stats={stats} />
-				<QuestCard quest={quest} />
-				<TimerCard isRunning={isRunning} quest={quest} onLockIn={onLockIn} />
-				<CapturedNotes notes={captureNotes} />
-			</ScrollView>
+			{mission ? (
+				<>
+					<GameCard accent="green">
+						<View className="flex-row items-center justify-between gap-3">
+							<StatusPill
+								accent={mission.status === "shipped" ? "green" : "blue"}
+								icon="flag-outline"
+								label={mission.status.toUpperCase()}
+							/>
+							<StatusPill
+								accent="gold"
+								icon="sparkles-outline"
+								label={`Rank: ${stats.rank}`}
+							/>
+						</View>
 
-			<CaptureBar onPress={onCapturePress} />
+						<View className="gap-2">
+							<SectionLabel>Mission</SectionLabel>
+							<Text
+								className="font-extrabold text-3xl"
+								style={{ color: lifeColors.text }}
+							>
+								{mission.title}
+							</Text>
+						</View>
+
+						<View
+							className="gap-2 rounded-[20px] p-4"
+							style={{ backgroundColor: lifeColors.proofBlueSoft }}
+						>
+							<View className="flex-row items-center gap-2">
+								<Icon
+									name="shield-checkmark-outline"
+									size={20}
+									color={lifeColors.proofBlue}
+								/>
+								<SectionLabel>Proof Required</SectionLabel>
+							</View>
+							<Text
+								className="font-extrabold text-lg"
+								style={{ color: lifeColors.text }}
+							>
+								{mission.proofTarget}
+							</Text>
+						</View>
+
+						<View className="flex-row flex-wrap gap-2">
+							<StatusPill
+								accent="orange"
+								icon="stopwatch-outline"
+								label={`${mission.timeboxMinutes} minutes`}
+							/>
+							<StatusPill
+								accent="purple"
+								icon="megaphone-outline"
+								label="Post From Proof unlocks after upload"
+							/>
+						</View>
+					</GameCard>
+
+					<GameButton
+						label="Lock In"
+						disabled={!canLockIn || mission.status === "active"}
+						onPress={onLockIn}
+					/>
+
+					<View className="flex-row gap-3">
+						<View className="flex-1">
+							<GameButton
+								variant="secondary"
+								accent="blue"
+								label="Edit Mission"
+								onPress={onEditMission}
+							/>
+						</View>
+						<View className="flex-1">
+							<GameButton
+								variant="secondary"
+								accent="orange"
+								label="Shrink Mission"
+								onPress={onShrinkMission}
+							/>
+						</View>
+					</View>
+				</>
+			) : (
+				<GameCard accent="green">
+					<View className="items-center gap-4 py-8">
+						<View
+							className="h-24 w-24 items-center justify-center rounded-full"
+							style={{ backgroundColor: lifeColors.greenSoft }}
+						>
+							<Icon name="flag-outline" size={42} color={lifeColors.green} />
+						</View>
+						<Text
+							className="text-center font-extrabold text-2xl"
+							style={{ color: lifeColors.text }}
+						>
+							Pick one mission. Make the proof tiny enough to ship today.
+						</Text>
+						<GameButton label="Build Mission" onPress={onBuildMission} />
+					</View>
+				</GameCard>
+			)}
+
+			<GameButton
+				variant="secondary"
+				accent="gold"
+				label="View Profile / Rank"
+				onPress={onViewProfile}
+			/>
+		</GameScreen>
+	);
+}
+
+function StreakPill({ streak }: { streak: number }) {
+	return (
+		<View
+			className="flex-row items-center gap-2 rounded-full px-4 py-3"
+			style={{
+				backgroundColor: lifeColors.gold,
+				borderBottomColor: lifeColors.goldDark,
+				borderBottomWidth: 4,
+			}}
+		>
+			<Icon name="flame-outline" size={20} color={lifeColors.text} />
+			<Text className="font-extrabold" style={{ color: lifeColors.text }}>
+				{streak}
+			</Text>
 		</View>
 	);
 }

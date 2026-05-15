@@ -19,7 +19,7 @@ const convex = new ConvexReactClient(env.EXPO_PUBLIC_CONVEX_URL, {
 /* ------------------------------- root layout ------------------------------ */
 export default function Layout() {
 	return (
-		<GestureHandlerRootView className="flex-1">
+		<GestureHandlerRootView style={{ flex: 1 }}>
 			<KeyboardProvider>
 				<AppThemeProvider>
 					<HeroUINativeProvider>
