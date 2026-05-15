@@ -1,4 +1,5 @@
 import type { ComponentProps, ReactNode } from "react";
+import { useRef } from "react";
 import {
 	Pressable,
 	ScrollView,
@@ -317,22 +318,44 @@ export function SectionLabel({ children }: { children: ReactNode }) {
 }
 
 export function GameInput(props: TextInputProps) {
+	const inputRef = useRef<TextInput>(null);
+	const isMultiline = Boolean(props.multiline);
+
 	return (
-		<TextInput
-			{...props}
-			placeholderTextColor={lifeColors.disabled}
-			className="rounded-[18px] border-2 px-4 py-4 font-bold text-base"
-			style={[
-				{
-					backgroundColor: lifeColors.card,
-					borderColor: lifeColors.line,
-					color: lifeColors.text,
-					minHeight: props.multiline ? 96 : 58,
-					textAlignVertical: props.multiline ? "top" : "center",
-				},
-				props.style,
-			]}
-		/>
+		<Pressable
+			disabled={props.editable === false}
+			onPress={() => inputRef.current?.focus()}
+			className="rounded-[18px] border-2 px-4"
+			style={{
+				backgroundColor: lifeColors.card,
+				borderColor: lifeColors.line,
+				justifyContent: isMultiline ? "flex-start" : "center",
+				minHeight: isMultiline ? 96 : 58,
+				paddingVertical: isMultiline ? 16 : 0,
+			}}
+		>
+			<TextInput
+				{...props}
+				ref={inputRef}
+				multiline={props.multiline}
+				placeholderTextColor={lifeColors.disabled}
+				className="font-bold text-base"
+				style={[
+					{
+						color: lifeColors.text,
+						height: isMultiline ? undefined : 24,
+						includeFontPadding: false,
+						lineHeight: 22,
+						minHeight: isMultiline ? 64 : undefined,
+						padding: 0,
+						paddingBottom: 0,
+						paddingTop: 0,
+						textAlignVertical: isMultiline ? "top" : "center",
+					},
+					props.style,
+				]}
+			/>
+		</Pressable>
 	);
 }
 
