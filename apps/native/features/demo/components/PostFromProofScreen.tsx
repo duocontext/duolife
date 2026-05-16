@@ -9,11 +9,11 @@ import {
 	StatusPill,
 	useLifeTheme,
 } from "@/components/game-ui";
-import type { GeneratedPost, Mission, PostState, Proof } from "../types";
+import type { GeneratedPost, PostState, Proof } from "../types";
+import { ProofArtifactCard } from "./ProofArtifactCard";
 
 type PostFromProofScreenProps = {
 	generatedPosts: GeneratedPost[];
-	mission: Mission;
 	postState: PostState | null;
 	proof: Proof;
 	selectedPostId: string;
@@ -25,7 +25,6 @@ type PostFromProofScreenProps = {
 
 export function PostFromProofScreen({
 	generatedPosts,
-	mission,
 	postState,
 	proof,
 	selectedPostId,
@@ -47,25 +46,10 @@ export function PostFromProofScreen({
 				onBack={onBack}
 			/>
 
-			<GameCard accent="purple">
-				<View className="gap-2">
-					<SectionLabel>Proof Preview</SectionLabel>
-					<Text
-						className="font-extrabold text-xl"
-						style={{ color: colors.text }}
-					>
-						{mission.title}
-					</Text>
-					<Text className="font-bold" style={{ color: colors.text }}>
-						{proof.content}
-					</Text>
-					<StatusPill
-						accent="blue"
-						icon="chatbubble-ellipses-outline"
-						label={proof.reflection}
-					/>
-				</View>
-			</GameCard>
+			<View className="gap-2">
+				<SectionLabel>Proof Preview</SectionLabel>
+				<ProofArtifactCard proof={proof} />
+			</View>
 
 			<GameCard>
 				<View className="gap-3">

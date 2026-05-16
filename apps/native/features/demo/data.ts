@@ -1,10 +1,4 @@
-import type {
-	GeneratedPost,
-	GoalType,
-	IdentityType,
-	PlayerStats,
-	ProofType,
-} from "./types";
+import type { GeneratedPost, GoalType, IdentityType, ProofType } from "./types";
 
 export const IDENTITY_OPTIONS: IdentityType[] = [
 	"Founder",
@@ -61,14 +55,6 @@ export const FAILURE_REASONS = [
 	"Energy crash",
 	"Other",
 ];
-
-export const STARTER_STATS: PlayerStats = {
-	currentShipStreak: 3,
-	currentPostStreak: 2,
-	proofShippedThisWeek: 4,
-	frozenCount: 1,
-	rank: "Locked-In Rookie",
-};
 
 export function buildGeneratedPosts(input: {
 	missionTitle: string;

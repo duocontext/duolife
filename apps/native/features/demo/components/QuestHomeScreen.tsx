@@ -9,49 +9,75 @@ import {
 	useLifeTheme,
 } from "@/components/game-ui";
 import { Icon } from "@/components/icon";
-import type { Mission, PlayerStats } from "../types";
+import type { Mission, PlayerStats, Proof } from "../types";
+import { ProofArtifactCard } from "./ProofArtifactCard";
 
 type QuestHomeScreenProps = {
 	mission: Mission | null;
+	proof: Proof | null;
+	remainingSeconds: number;
 	stats: PlayerStats;
 	onBack: () => void;
 	onBuildMission: () => void;
+	onBuildNextMission: () => void;
+	onContinueSprint: () => void;
 	onEditMission: () => void;
 	onLockIn: () => void;
+	onPostFromProof: () => void;
+	onRunItBack: () => void;
 	onShrinkMission: () => void;
-	onViewProfile: () => void;
+	onUploadProof: () => void;
 };
 
 export function QuestHomeScreen({
 	mission,
+	proof,
+	remainingSeconds,
 	stats,
 	onBack,
 	onBuildMission,
+	onBuildNextMission,
+	onContinueSprint,
 	onEditMission,
 	onLockIn,
+	onPostFromProof,
+	onRunItBack,
 	onShrinkMission,
-	onViewProfile,
+	onUploadProof,
 }: QuestHomeScreenProps) {
 	const canLockIn = Boolean(mission?.proofTarget && mission?.timeboxMinutes);
+	const minutes = Math.max(0, Math.ceil(remainingSeconds / 60));
 	const { colors } = useLifeTheme();
 
 	return (
 		<GameScreen>
 			<ScreenHeader
-				title="Today's Mission"
-				eyebrow="One proof target"
+				title="Today"
+				eyebrow="One mission. One proof."
 				onBack={onBack}
 				right={<StreakPill streak={stats.currentShipStreak} />}
 			/>
 
 			{mission ? (
 				<>
-					<GameCard accent="green">
+					<GameCard
+						accent={
+							mission.status === "frozen"
+								? "red"
+								: mission.status === "posted"
+									? "gold"
+									: mission.status === "shipped"
+										? "purple"
+										: mission.status === "active"
+											? "orange"
+											: "green"
+						}
+					>
 						<View className="flex-row items-center justify-between gap-3">
 							<StatusPill
-								accent={mission.status === "shipped" ? "green" : "blue"}
+								accent={mission.status === "frozen" ? "red" : "blue"}
 								icon="flag-outline"
-								label={mission.status.toUpperCase()}
+								label={statusLabel(mission.status)}
 							/>
 							<StatusPill
 								accent="gold"
@@ -80,7 +106,7 @@ export function QuestHomeScreen({
 									size={20}
 									color={colors.proofBlue}
 								/>
-								<SectionLabel>Proof Required</SectionLabel>
+								<SectionLabel>Proof target</SectionLabel>
 							</View>
 							<Text
 								className="font-extrabold text-lg"
@@ -94,40 +120,118 @@ export function QuestHomeScreen({
 							<StatusPill
 								accent="orange"
 								icon="stopwatch-outline"
-								label={`${mission.timeboxMinutes} minutes`}
+								label={
+									mission.status === "active"
+										? `${minutes} min left`
+										: `${mission.timeboxMinutes} min lock-in`
+								}
 							/>
 							<StatusPill
 								accent="purple"
 								icon="megaphone-outline"
-								label="Post From Proof unlocks after upload"
+								label="Post From Proof after upload"
 							/>
 						</View>
 					</GameCard>
 
-					<GameButton
-						label="Lock In"
-						disabled={!canLockIn || mission.status === "active"}
-						onPress={onLockIn}
-					/>
+					{mission.status === "draft" ? (
+						<>
+							<GameButton
+								label="Lock In"
+								disabled={!canLockIn}
+								onPress={onLockIn}
+							/>
+							<View className="flex-row gap-3">
+								<View className="flex-1">
+									<GameButton
+										variant="secondary"
+										accent="blue"
+										label="Edit"
+										onPress={onEditMission}
+									/>
+								</View>
+								<View className="flex-1">
+									<GameButton
+										variant="secondary"
+										accent="orange"
+										label="Shrink"
+										onPress={onShrinkMission}
+									/>
+								</View>
+							</View>
+						</>
+					) : null}
 
-					<View className="flex-row gap-3">
-						<View className="flex-1">
+					{mission.status === "active" ? (
+						<>
 							<GameButton
-								variant="secondary"
-								accent="blue"
-								label="Edit Mission"
-								onPress={onEditMission}
-							/>
-						</View>
-						<View className="flex-1">
-							<GameButton
-								variant="secondary"
 								accent="orange"
-								label="Shrink Mission"
-								onPress={onShrinkMission}
+								label="Continue Sprint"
+								onPress={onContinueSprint}
 							/>
-						</View>
-					</View>
+							<GameButton
+								accent="blue"
+								variant="secondary"
+								label="Upload Proof"
+								onPress={onUploadProof}
+							/>
+						</>
+					) : null}
+
+					{mission.status === "shipped" && proof ? (
+						<>
+							<ProofArtifactCard compact proof={proof} />
+							<GameButton
+								accent="purple"
+								label="Post From Proof"
+								onPress={onPostFromProof}
+							/>
+						</>
+					) : null}
+
+					{mission.status === "posted" ? (
+						<GameCard accent="gold">
+							<View className="items-center gap-3 py-3">
+								<Icon name="trophy-outline" size={42} color={colors.goldDark} />
+								<Text
+									className="text-center font-extrabold text-2xl"
+									style={{ color: colors.text }}
+								>
+									Run Complete
+								</Text>
+								<Text
+									className="text-center font-bold"
+									style={{ color: colors.subtext }}
+								>
+									Proof shipped and posted. Build the next loop.
+								</Text>
+							</View>
+							<GameButton
+								accent="gold"
+								label="Build Next Mission"
+								onPress={onBuildNextMission}
+							/>
+						</GameCard>
+					) : null}
+
+					{mission.status === "frozen" ? (
+						<GameCard accent="red">
+							<Text
+								className="font-extrabold text-xl"
+								style={{ color: colors.text }}
+							>
+								Run frozen
+							</Text>
+							<Text className="font-bold" style={{ color: colors.text }}>
+								The timer expired before proof shipped.
+							</Text>
+							<GameButton
+								accent="red"
+								label="Run It Back"
+								onPress={onRunItBack}
+							/>
+						</GameCard>
+					) : null}
 				</>
 			) : (
 				<GameCard accent="green">
@@ -148,15 +252,24 @@ export function QuestHomeScreen({
 					</View>
 				</GameCard>
 			)}
-
-			<GameButton
-				variant="secondary"
-				accent="gold"
-				label="View Profile / Rank"
-				onPress={onViewProfile}
-			/>
 		</GameScreen>
 	);
+}
+
+function statusLabel(status: Mission["status"]) {
+	if (status === "shipped") {
+		return "PROOF UPLOADED";
+	}
+
+	if (status === "posted") {
+		return "POSTED";
+	}
+
+	if (status === "frozen") {
+		return "FROZEN";
+	}
+
+	return status.toUpperCase();
 }
 
 function StreakPill({ streak }: { streak: number }) {

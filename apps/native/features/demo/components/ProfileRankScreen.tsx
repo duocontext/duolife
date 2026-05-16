@@ -1,38 +1,30 @@
 import { Text, View } from "react-native";
 import {
-	GameButton,
 	GameCard,
 	GameScreen,
 	ScreenHeader,
 	SectionLabel,
-	StatusPill,
 	useLifeTheme,
 } from "@/components/game-ui";
 import { Icon } from "@/components/icon";
-import type { PlayerStats, RecentProof } from "../types";
+import type { PlayerStats, Proof } from "../types";
+import { ProofArtifactCard } from "./ProofArtifactCard";
 
 type ProfileRankScreenProps = {
-	recentProof: RecentProof[];
+	proofHistory: Proof[];
 	stats: PlayerStats;
-	onBack: () => void;
-	onReturnToday: () => void;
 };
 
 export function ProfileRankScreen({
-	recentProof,
+	proofHistory,
 	stats,
-	onBack,
-	onReturnToday,
 }: ProfileRankScreenProps) {
 	const { colors } = useLifeTheme();
+	const latestProof = proofHistory[0] ?? null;
 
 	return (
 		<GameScreen>
-			<ScreenHeader
-				title="Khaled"
-				eyebrow="Proof-based profile"
-				onBack={onBack}
-			/>
+			<ScreenHeader title="Me" eyebrow="Proof-based profile" />
 
 			<GameCard accent="gold">
 				<View className="items-center gap-4 py-3">
@@ -56,10 +48,7 @@ export function ProfileRankScreen({
 
 			<View className="flex-row flex-wrap gap-3">
 				<StatCard label="Ship streak" value={`${stats.currentShipStreak}`} />
-				<StatCard
-					label="Posts from proof"
-					value={`${stats.currentPostStreak}`}
-				/>
+				<StatCard label="Post streak" value={`${stats.currentPostStreak}`} />
 				<StatCard
 					label="Proof this week"
 					value={`${stats.proofShippedThisWeek}`}
@@ -67,42 +56,18 @@ export function ProfileRankScreen({
 				<StatCard label="Frozen count" value={`${stats.frozenCount}`} />
 			</View>
 
-			<GameCard>
-				<View className="gap-3">
-					<SectionLabel>Recent proof</SectionLabel>
-					{recentProof.map((item) => (
-						<View
-							key={item.id}
-							className="gap-2 rounded-[18px] p-4"
-							style={{ backgroundColor: colors.bg }}
-						>
-							<View className="flex-row items-center justify-between gap-3">
-								<Text
-									className="flex-1 font-extrabold text-base"
-									style={{ color: colors.text }}
-								>
-									{item.title}
-								</Text>
-								<StatusPill
-									accent={
-										item.status === "posted"
-											? "purple"
-											: item.status === "frozen"
-												? "orange"
-												: "green"
-									}
-									label={item.status}
-								/>
-							</View>
-							<Text className="font-bold" style={{ color: colors.subtext }}>
-								{item.text}
-							</Text>
-						</View>
-					))}
-				</View>
-			</GameCard>
-
-			<GameButton label="Return to Today's Mission" onPress={onReturnToday} />
+			<View className="gap-3">
+				<SectionLabel>Latest proof</SectionLabel>
+				{latestProof ? (
+					<ProofArtifactCard compact proof={latestProof} />
+				) : (
+					<GameCard>
+						<Text className="font-bold" style={{ color: colors.subtext }}>
+							No proof shipped yet. Your first artifact will show here.
+						</Text>
+					</GameCard>
+				)}
+			</View>
 		</GameScreen>
 	);
 }

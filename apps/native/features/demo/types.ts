@@ -11,6 +11,16 @@ export type MvpScreen =
 	| "run-it-back"
 	| "profile";
 
+export type DemoTab = "today" | "proof" | "me";
+
+export type TodayMode =
+	| "home"
+	| "mission-builder"
+	| "sprint"
+	| "proof-upload"
+	| "post-proof"
+	| "run-it-back";
+
 export type IdentityType =
 	| "Founder"
 	| "Creator"
@@ -40,6 +50,7 @@ export type MissionStatus =
 	| "draft"
 	| "active"
 	| "shipped"
+	| "posted"
 	| "frozen"
 	| "failed";
 
@@ -52,6 +63,7 @@ export type Mission = {
 	createdAt: string;
 	startedAt?: string;
 	completedAt?: string;
+	postedAt?: string;
 };
 
 export type SetupContext = {
@@ -65,10 +77,13 @@ export type SetupContext = {
 export type Proof = {
 	id: string;
 	missionId: string;
+	missionTitle: string;
+	proofTarget: string;
 	type: ProofType;
 	content: string;
 	reflection: string;
 	createdAt: string;
+	postedAt?: string;
 };
 
 export type GeneratedPost = {
@@ -86,6 +101,18 @@ export type PostState = {
 	markedPosted: boolean;
 	postUrl?: string;
 	createdAt: string;
+	postedAt?: string;
+};
+
+export type GeneratedPostSet = PostState & {
+	posts: GeneratedPost[];
+};
+
+export type ActiveTimerState = {
+	missionId: string;
+	startedAt: string;
+	expiresAt: string;
+	durationSeconds: number;
 };
 
 export type PlayerStats = {

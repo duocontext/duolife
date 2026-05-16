@@ -24,6 +24,7 @@ type MissionBuilderStep = "mission" | "proof" | "timebox" | "confirm";
 
 type MissionBuilderScreenProps = {
 	canSave: boolean;
+	confirmLabel?: string;
 	isVagueMission: boolean;
 	missionTitle: string;
 	proofTarget: string;
@@ -37,6 +38,7 @@ type MissionBuilderScreenProps = {
 
 export function MissionBuilderScreen({
 	canSave,
+	confirmLabel = "Save Mission",
 	isVagueMission,
 	missionTitle,
 	proofTarget,
@@ -269,7 +271,7 @@ export function MissionBuilderScreen({
 								</View>
 								<GameButton
 									accent="blue"
-									label="Save Mission"
+									label={confirmLabel}
 									disabled={!canSave}
 									onPress={onSave}
 								/>

@@ -7,12 +7,12 @@ import {
 	GameScreen,
 	ScreenHeader,
 	SectionLabel,
-	StatusPill,
 	useLifeTheme,
 } from "@/components/game-ui";
 import { Icon } from "@/components/icon";
 import { PROOF_TYPE_OPTIONS } from "../data";
 import type { Mission, ProofType } from "../types";
+import { ProofArtifactCard } from "./ProofArtifactCard";
 
 type ProofUploadScreenProps = {
 	canSubmit: boolean;
@@ -96,19 +96,20 @@ export function ProofUploadScreen({
 						multiline
 					/>
 					{proofContent.trim() ? (
-						<View
-							className="gap-2 rounded-[18px] p-4"
-							style={{ backgroundColor: colors.greenSoft }}
-						>
-							<StatusPill
-								accent="green"
-								icon="checkmark-outline"
-								label="Preview"
-							/>
-							<Text className="font-bold" style={{ color: colors.text }}>
-								{proofContent}
-							</Text>
-						</View>
+						<ProofArtifactCard
+							compact
+							framed={false}
+							proof={{
+								id: "preview",
+								missionId: mission.id,
+								missionTitle: mission.title,
+								proofTarget: mission.proofTarget,
+								type: proofType,
+								content: proofContent,
+								reflection: reflection || "Reflection pending.",
+								createdAt: new Date().toISOString(),
+							}}
+						/>
 					) : null}
 				</View>
 			</GameCard>
