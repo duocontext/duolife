@@ -12,7 +12,7 @@ import {
 	StatusPill,
 	useLifeTheme,
 } from "@/components/game-ui";
-import { MISSION_EXAMPLES, PROOF_EXAMPLES, TIMEBOX_OPTIONS } from "../data";
+import { MISSION_EXAMPLES, TIMEBOX_OPTIONS } from "../data";
 import {
 	AnimatedChoiceCard,
 	choiceFeedbackDelayMs,
@@ -20,7 +20,7 @@ import {
 	StepTransition,
 } from "./DuolingoMotion";
 
-type MissionBuilderStep = "mission" | "proof" | "timebox" | "confirm";
+type MissionBuilderStep = "mission" | "timebox" | "confirm";
 
 type MissionBuilderScreenProps = {
 	canSave: boolean;
@@ -31,7 +31,6 @@ type MissionBuilderScreenProps = {
 	timeboxMinutes: number;
 	onBack: () => void;
 	onChangeMissionTitle: (value: string) => void;
-	onChangeProofTarget: (value: string) => void;
 	onSave: () => void;
 	onSelectTimebox: (minutes: number) => void;
 };
@@ -45,7 +44,6 @@ export function MissionBuilderScreen({
 	timeboxMinutes,
 	onBack,
 	onChangeMissionTitle,
-	onChangeProofTarget,
 	onSave,
 	onSelectTimebox,
 }: MissionBuilderScreenProps) {
@@ -54,7 +52,6 @@ export function MissionBuilderScreen({
 	const { colors } = useLifeTheme();
 	const currentStep = steps.findIndex((item) => item.key === step) + 1;
 	const canContinueMission = missionTitle.trim().length > 0;
-	const canContinueProof = proofTarget.trim().length > 0;
 
 	useEffect(() => {
 		return () => {
@@ -101,11 +98,6 @@ export function MissionBuilderScreen({
 
 	const selectMissionExample = (example: string) => {
 		onChangeMissionTitle(example);
-		goToStepAfterFeedback("proof");
-	};
-
-	const selectProofExample = (example: string) => {
-		onChangeProofTarget(example);
 		goToStepAfterFeedback("timebox");
 	};
 
@@ -171,39 +163,6 @@ export function MissionBuilderScreen({
 								accent="blue"
 								label="Next"
 								disabled={!canContinueMission}
-								onPress={() => goToStep("proof")}
-							/>
-						</StepCard>
-					) : null}
-
-					{step === "proof" ? (
-						<StepCard
-							accent="blue"
-							kicker="Proof"
-							title="What evidence proves it?"
-							subtitle="Name the artifact you will upload when the mission is done."
-						>
-							<GameInput
-								value={proofTarget}
-								onChangeText={onChangeProofTarget}
-								placeholder="10-second screen recording"
-							/>
-							<View className="flex-row flex-wrap gap-2">
-								{PROOF_EXAMPLES.map((example) => (
-									<AnimatedChoiceCard
-										accent="blue"
-										key={example}
-										label={example}
-										selected={proofTarget === example}
-										variant="pill"
-										onPress={() => selectProofExample(example)}
-									/>
-								))}
-							</View>
-							<GameButton
-								accent="blue"
-								label="Next"
-								disabled={!canContinueProof}
 								onPress={() => goToStep("timebox")}
 							/>
 						</StepCard>
@@ -257,13 +216,16 @@ export function MissionBuilderScreen({
 										Confirm the mission loop.
 									</Text>
 									<Text className="font-bold" style={{ color: colors.subtext }}>
-										This becomes your next lock-in: one mission, one proof
-										target, one timer.
+										This becomes your next lock-in: one mission, one receipt,
+										one timer.
 									</Text>
 								</View>
 								<View className="gap-3">
 									<SummaryRow label="Mission" value={missionTitle} />
-									<SummaryRow label="Proof target" value={proofTarget} />
+									<SummaryRow
+										label="Proof"
+										value={proofTarget || "Proof required before this counts."}
+									/>
 									<SummaryRow
 										label="Lock-in timer"
 										value={`${timeboxMinutes} minutes`}
@@ -347,7 +309,6 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
 
 const steps: { key: MissionBuilderStep; label: string }[] = [
 	{ key: "mission", label: "Mission" },
-	{ key: "proof", label: "Proof" },
 	{ key: "timebox", label: "Timebox" },
 	{ key: "confirm", label: "Confirm" },
 ];

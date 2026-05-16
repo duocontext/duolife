@@ -4,18 +4,15 @@ import {
 	GameCard,
 	GameScreen,
 	ScreenHeader,
-	SectionLabel,
-	StatusPill,
 	useLifeTheme,
 } from "@/components/game-ui";
-import { Icon } from "@/components/icon";
 import type { Mission } from "../types";
 
 type LockInSprintScreenProps = {
 	mission: Mission;
 	remainingSeconds: number;
 	onBack: () => void;
-	onShrinkMission: () => void;
+	onStopSprint: () => void;
 	onUploadProof: () => void;
 };
 
@@ -23,10 +20,11 @@ export function LockInSprintScreen({
 	mission,
 	remainingSeconds,
 	onBack,
-	onShrinkMission,
+	onStopSprint,
 	onUploadProof,
 }: LockInSprintScreenProps) {
 	const isFinalMinute = remainingSeconds <= 60;
+	const isTimeUp = remainingSeconds <= 0;
 	const minutes = Math.floor(remainingSeconds / 60);
 	const seconds = String(remainingSeconds % 60).padStart(2, "0");
 	const { colors } = useLifeTheme();
@@ -34,68 +32,70 @@ export function LockInSprintScreen({
 	return (
 		<GameScreen>
 			<ScreenHeader
-				title="Lock-In Sprint"
-				eyebrow={mission.title}
+				title="Today's Mission"
+				eyebrow="Active sprint"
 				onBack={onBack}
-				right={
-					<StatusPill
-						accent={isFinalMinute ? "red" : "orange"}
-						icon="stopwatch-outline"
-						label="Active"
-					/>
-				}
 			/>
 
 			<GameCard accent={isFinalMinute ? "red" : "orange"}>
-				<View className="items-center gap-3 py-4">
+				<View className="gap-3">
+					<View
+						className="self-start rounded-full px-3 py-2"
+						style={{ backgroundColor: colors.orangeSoft }}
+					>
+						<Text
+							className="font-extrabold text-xs uppercase"
+							style={{ color: colors.text }}
+						>
+							Sprint active
+						</Text>
+					</View>
+					<Text
+						className="font-extrabold text-3xl"
+						style={{ color: colors.text }}
+					>
+						{mission.title}
+					</Text>
+					<View
+						className="rounded-[20px] border-2 p-4"
+						style={{
+							backgroundColor: colors.proofBlueSoft,
+							borderColor: colors.proofBlue,
+						}}
+					>
+						<Text
+							className="font-extrabold text-base"
+							style={{ color: colors.text }}
+						>
+							Proof required before this counts.
+						</Text>
+					</View>
+				</View>
+
+				<View className="items-center gap-2 py-4">
 					<Text
 						className="font-black text-7xl"
-						style={{ color: isFinalMinute ? colors.red : colors.text }}
+						style={{ color: isFinalMinute ? colors.red : colors.orange }}
 					>
 						{minutes}:{seconds}
 					</Text>
-					<Text
-						className="font-extrabold text-lg"
-						style={{ color: colors.text }}
-					>
-						left
-					</Text>
-				</View>
-			</GameCard>
-
-			<GameCard accent="blue">
-				<View className="flex-row items-start gap-3">
-					<View
-						className="h-12 w-12 items-center justify-center rounded-full"
-						style={{ backgroundColor: colors.proofBlueSoft }}
-					>
-						<Icon name="camera-outline" size={24} color={colors.proofBlue} />
-					</View>
-					<View className="flex-1 gap-2">
-						<SectionLabel>Proof Due</SectionLabel>
+					{isTimeUp ? (
 						<Text
-							className="font-extrabold text-xl"
-							style={{ color: colors.text }}
+							className="font-extrabold text-base"
+							style={{ color: colors.red }}
 						>
-							{mission.proofTarget}
+							Time's up. Show proof.
 						</Text>
-						<StatusPill accent="orange" label="Not shipped yet" />
-					</View>
+					) : null}
 				</View>
-			</GameCard>
-
-			<GameCard>
-				<Text className="font-bold text-base" style={{ color: colors.text }}>
-					Proof is still due. Keep it tiny and ship.
-				</Text>
 			</GameCard>
 
 			<GameButton accent="blue" label="Upload Proof" onPress={onUploadProof} />
 			<GameButton
 				accent="orange"
+				label="Need to stop?"
 				variant="secondary"
-				label="Shrink Mission"
-				onPress={onShrinkMission}
+				onPress={onStopSprint}
 			/>
 		</GameScreen>
 	);

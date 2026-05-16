@@ -1,3 +1,5 @@
+import { useFocusEffect } from "expo-router";
+import { useCallback, useRef, useState } from "react";
 import { Text, View } from "react-native";
 import {
 	GameCard,
@@ -8,24 +10,77 @@ import {
 } from "@/components/game-ui";
 import { Icon } from "@/components/icon";
 import type { Proof } from "../types";
+import { ProofArchiveButton } from "./ProofArchiveButton";
 import { ProofArtifactCard } from "./ProofArtifactCard";
 
 type ProofHistoryScreenProps = {
 	proofHistory: Proof[];
+	onArchiveProof: (proofId: string) => void;
+	onRestoreProof: (proofId: string) => void;
 };
 
-export function ProofHistoryScreen({ proofHistory }: ProofHistoryScreenProps) {
+export function ProofHistoryScreen({
+	proofHistory,
+	onArchiveProof,
+	onRestoreProof,
+}: ProofHistoryScreenProps) {
 	const { colors } = useLifeTheme();
+	const [isViewingArchive, setIsViewingArchive] = useState(false);
+	const shouldResetOnFocus = useRef(false);
+	const activeProofs = proofHistory.filter((proof) => !proof.archivedAt);
+	const archivedProofs = proofHistory.filter((proof) => proof.archivedAt);
+	const visibleProofs = isViewingArchive ? archivedProofs : activeProofs;
+
+	useFocusEffect(
+		useCallback(() => {
+			if (shouldResetOnFocus.current) {
+				shouldResetOnFocus.current = false;
+				setIsViewingArchive(false);
+			}
+
+			return () => {
+				shouldResetOnFocus.current = true;
+			};
+		}, []),
+	);
 
 	return (
 		<GameScreen>
-			<ScreenHeader title="Proof" eyebrow="All submitted artifacts" />
+			<ScreenHeader
+				title={isViewingArchive ? "Archive" : "Proof"}
+				eyebrow={`${visibleProofs.length} ${
+					isViewingArchive ? "archived" : "active"
+				}`}
+				right={
+					proofHistory.length > 0 ? (
+						<ProofArchiveButton
+							isViewingArchive={isViewingArchive}
+							onPress={() => setIsViewingArchive((current) => !current)}
+						/>
+					) : null
+				}
+			/>
 
-			{proofHistory.length > 0 ? (
+			{visibleProofs.length > 0 ? (
 				<View className="gap-4">
-					<SectionLabel>{proofHistory.length} submitted</SectionLabel>
-					{proofHistory.map((proof) => (
-						<ProofArtifactCard key={proof.id} proof={proof} />
+					<SectionLabel>
+						{visibleProofs.length} {isViewingArchive ? "archived" : "active"}
+					</SectionLabel>
+					{visibleProofs.map((proof) => (
+						<ProofArtifactCard
+							key={proof.id}
+							proof={proof}
+							action={{
+								icon: isViewingArchive
+									? "arrow-undo-outline"
+									: "archive-outline",
+								label: isViewingArchive ? "Restore proof" : "Archive proof",
+								onPress: () =>
+									isViewingArchive
+										? onRestoreProof(proof.id)
+										: onArchiveProof(proof.id),
+							}}
+						/>
 					))}
 				</View>
 			) : (
@@ -41,13 +96,17 @@ export function ProofHistoryScreen({ proofHistory }: ProofHistoryScreenProps) {
 							className="text-center font-extrabold text-2xl"
 							style={{ color: colors.text }}
 						>
-							No proof artifacts yet.
+							{isViewingArchive
+								? "No archived proof yet."
+								: "No proof artifacts yet."}
 						</Text>
 						<Text
 							className="text-center font-bold"
 							style={{ color: colors.subtext }}
 						>
-							Submit proof from Today and it will persist here.
+							{isViewingArchive
+								? "Archive a proof and you can restore it here."
+								: "Submit proof from Today and it will persist here."}
 						</Text>
 					</View>
 				</GameCard>

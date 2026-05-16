@@ -1,5 +1,5 @@
 import type { ComponentProps } from "react";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import {
 	type AccentName,
 	GameCard,
@@ -23,35 +23,25 @@ const proofVisuals: Record<
 		icon: "camera-outline",
 		label: "Screenshot artifact",
 	},
-	Video: {
+	"Video/demo": {
 		accent: "purple",
 		icon: "videocam-outline",
-		label: "Video artifact",
+		label: "Demo artifact",
 	},
 	Link: {
 		accent: "green",
 		icon: "link-outline",
 		label: "Link artifact",
 	},
-	Text: {
+	Notes: {
 		accent: "gold",
 		icon: "document-text-outline",
-		label: "Text artifact",
+		label: "Notes artifact",
 	},
-	Voice: {
+	Other: {
 		accent: "orange",
-		icon: "mic-outline",
-		label: "Voice artifact",
-	},
-	Commit: {
-		accent: "red",
-		icon: "git-branch-outline",
-		label: "Commit artifact",
-	},
-	Figma: {
-		accent: "purple",
-		icon: "color-palette-outline",
-		label: "Figma artifact",
+		icon: "albums-outline",
+		label: "Proof artifact",
 	},
 };
 
@@ -59,15 +49,21 @@ type ProofArtifactCardProps = {
 	proof: Proof;
 	compact?: boolean;
 	framed?: boolean;
+	action?: {
+		icon: ComponentProps<typeof Icon>["name"];
+		label: string;
+		onPress: () => void;
+	};
 };
 
 export function ProofArtifactCard({
 	proof,
 	compact = false,
 	framed = true,
+	action,
 }: ProofArtifactCardProps) {
 	const { colors, accents } = useLifeTheme();
-	const visual = proofVisuals[proof.type];
+	const visual = proofVisuals[proof.type] ?? proofVisuals.Other;
 	const tone = accents[visual.accent];
 	const createdDate = new Date(proof.createdAt).toLocaleDateString(undefined, {
 		month: "short",
@@ -105,6 +101,22 @@ export function ProofArtifactCard({
 						{visual.label} - {createdDate}
 					</Text>
 				</View>
+
+				{action ? (
+					<Pressable
+						accessibilityLabel={action.label}
+						accessibilityRole="button"
+						hitSlop={10}
+						onPress={action.onPress}
+						className="h-11 w-11 items-center justify-center rounded-[14px] border-2"
+						style={{
+							backgroundColor: colors.card,
+							borderColor: colors.line,
+						}}
+					>
+						<Icon name={action.icon} size={20} color={colors.subtext} />
+					</Pressable>
+				) : null}
 			</View>
 
 			<View
@@ -122,9 +134,9 @@ export function ProofArtifactCard({
 				</Text>
 			</View>
 
-			{compact ? null : (
+			{compact || !proof.reflection ? null : (
 				<View className="gap-2">
-					<SectionLabel>Reflection</SectionLabel>
+					<SectionLabel>Lesson</SectionLabel>
 					<Text className="font-bold text-base" style={{ color: colors.text }}>
 						{proof.reflection}
 					</Text>

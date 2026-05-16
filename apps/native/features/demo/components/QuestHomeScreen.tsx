@@ -165,15 +165,15 @@ export function QuestHomeScreen({
 					{mission.status === "active" ? (
 						<>
 							<GameButton
-								accent="orange"
-								label="Continue Sprint"
-								onPress={onContinueSprint}
-							/>
-							<GameButton
 								accent="blue"
-								variant="secondary"
 								label="Upload Proof"
 								onPress={onUploadProof}
+							/>
+							<GameButton
+								accent="orange"
+								variant="secondary"
+								label="Continue Sprint"
+								onPress={onContinueSprint}
 							/>
 						</>
 					) : null}

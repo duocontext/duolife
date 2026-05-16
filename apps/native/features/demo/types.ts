@@ -39,12 +39,10 @@ export type GoalType =
 
 export type ProofType =
 	| "Screenshot"
-	| "Video"
+	| "Video/demo"
 	| "Link"
-	| "Text"
-	| "Voice"
-	| "Commit"
-	| "Figma";
+	| "Notes"
+	| "Other";
 
 export type MissionStatus =
 	| "draft"
@@ -84,6 +82,7 @@ export type Proof = {
 	reflection: string;
 	createdAt: string;
 	postedAt?: string;
+	archivedAt?: string;
 };
 
 export type GeneratedPost = {
@@ -99,7 +98,7 @@ export type PostState = {
 	selectedPostId: string;
 	copied: boolean;
 	markedPosted: boolean;
-	postUrl?: string;
+	lesson?: string;
 	createdAt: string;
 	postedAt?: string;
 };

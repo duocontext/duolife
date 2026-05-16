@@ -3,6 +3,7 @@ import {
 	ChoiceChip,
 	GameButton,
 	GameCard,
+	GameInput,
 	GameScreen,
 	ScreenHeader,
 	SectionLabel,
@@ -18,6 +19,7 @@ type PostFromProofScreenProps = {
 	proof: Proof;
 	selectedPostId: string;
 	onBack: () => void;
+	onChangeLesson: (value: string) => void;
 	onCopyPost: () => void;
 	onMarkPosted: () => void;
 	onSelectPost: (id: string) => void;
@@ -29,6 +31,7 @@ export function PostFromProofScreen({
 	proof,
 	selectedPostId,
 	onBack,
+	onChangeLesson,
 	onCopyPost,
 	onMarkPosted,
 	onSelectPost,
@@ -41,19 +44,28 @@ export function PostFromProofScreen({
 	return (
 		<GameScreen>
 			<ScreenHeader
-				title="Turn proof into momentum"
-				eyebrow="Loop is not complete yet"
+				title="Post From Proof"
+				eyebrow="Proof captured. Post pending."
 				onBack={onBack}
 			/>
 
-			<View className="gap-2">
-				<SectionLabel>Proof Preview</SectionLabel>
-				<ProofArtifactCard proof={proof} />
-			</View>
+			<GameCard accent="blue">
+				<View className="gap-2">
+					<SectionLabel>Proof card preview</SectionLabel>
+					<ProofArtifactCard compact framed={false} proof={proof} />
+				</View>
+				<View className="gap-2">
+					<StatusPill accent="blue" label={`Proof: ${proof.type}`} />
+					<StatusPill
+						accent="purple"
+						label="Status: proof uploaded, post pending"
+					/>
+				</View>
+			</GameCard>
 
 			<GameCard>
 				<View className="gap-3">
-					<SectionLabel>Generated post options</SectionLabel>
+					<SectionLabel>Generated post</SectionLabel>
 					<View className="flex-row flex-wrap gap-2">
 						{generatedPosts.map((post) => (
 							<ChoiceChip
@@ -86,15 +98,38 @@ export function PostFromProofScreen({
 			{postState?.copied && !postState.markedPosted ? (
 				<GameCard accent="orange">
 					<Text
-						className="font-extrabold text-base"
+						className="font-extrabold text-lg"
 						style={{ color: colors.text }}
 					>
-						Proof shipped. Momentum not claimed yet.
+						Copied. Now post it before the run counts.
+					</Text>
+					<Text className="font-bold" style={{ color: colors.text }}>
+						Proof is private evidence. Posting turns it into leverage.
 					</Text>
 				</GameCard>
 			) : null}
 
-			<GameButton accent="purple" label="Mark Copied" onPress={onCopyPost} />
+			<GameCard accent="green">
+				<View className="gap-3">
+					<View className="gap-2">
+						<SectionLabel>Add one lesson, optional</SectionLabel>
+						<Text className="font-bold" style={{ color: colors.text }}>
+							This can improve the post, but it never blocks the loop.
+						</Text>
+					</View>
+					<GameInput
+						value={postState?.lesson ?? ""}
+						placeholder="Example: cutting the form made proof feel faster."
+						onChangeText={onChangeLesson}
+					/>
+				</View>
+			</GameCard>
+
+			<GameButton
+				accent="purple"
+				label={postState?.copied ? "Copied. Now Post" : "Copy Post"}
+				onPress={onCopyPost}
+			/>
 			<GameButton
 				accent="green"
 				variant={postState?.copied ? "primary" : "secondary"}

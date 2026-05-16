@@ -3,7 +3,6 @@ import {
 	ChoiceChip,
 	GameButton,
 	GameCard,
-	GameInput,
 	GameScreen,
 	ScreenHeader,
 	SectionLabel,
@@ -12,17 +11,12 @@ import {
 import { Icon } from "@/components/icon";
 import { PROOF_TYPE_OPTIONS } from "../data";
 import type { Mission, ProofType } from "../types";
-import { ProofArtifactCard } from "./ProofArtifactCard";
 
 type ProofUploadScreenProps = {
 	canSubmit: boolean;
 	mission: Mission;
-	proofContent: string;
 	proofType: ProofType;
-	reflection: string;
 	onBack: () => void;
-	onChangeProofContent: (value: string) => void;
-	onChangeReflection: (value: string) => void;
 	onSelectProofType: (type: ProofType) => void;
 	onSubmit: () => void;
 };
@@ -30,12 +24,8 @@ type ProofUploadScreenProps = {
 export function ProofUploadScreen({
 	canSubmit,
 	mission,
-	proofContent,
 	proofType,
-	reflection,
 	onBack,
-	onChangeProofContent,
-	onChangeReflection,
 	onSelectProofType,
 	onSubmit,
 }: ProofUploadScreenProps) {
@@ -45,7 +35,7 @@ export function ProofUploadScreen({
 		<GameScreen>
 			<ScreenHeader
 				title="Upload Proof"
-				eyebrow="Evidence first"
+				eyebrow="Show the receipt"
 				onBack={onBack}
 			/>
 
@@ -71,7 +61,7 @@ export function ProofUploadScreen({
 				</View>
 
 				<View className="gap-3">
-					<SectionLabel>Proof type</SectionLabel>
+					<SectionLabel>Receipt type</SectionLabel>
 					<View className="flex-row flex-wrap gap-2">
 						{PROOF_TYPE_OPTIONS.map((option) => (
 							<ChoiceChip
@@ -86,52 +76,18 @@ export function ProofUploadScreen({
 				</View>
 			</GameCard>
 
-			<GameCard>
-				<View className="gap-3">
-					<SectionLabel>Add proof content</SectionLabel>
-					<GameInput
-						value={proofContent}
-						onChangeText={onChangeProofContent}
-						placeholder="Paste a link or describe the uploaded proof"
-						multiline
-					/>
-					{proofContent.trim() ? (
-						<ProofArtifactCard
-							compact
-							framed={false}
-							proof={{
-								id: "preview",
-								missionId: mission.id,
-								missionTitle: mission.title,
-								proofTarget: mission.proofTarget,
-								type: proofType,
-								content: proofContent,
-								reflection: reflection || "Reflection pending.",
-								createdAt: new Date().toISOString(),
-							}}
-						/>
-					) : null}
-				</View>
-			</GameCard>
-
-			<GameCard>
-				<View className="gap-3">
-					<SectionLabel>What changed because of this sprint?</SectionLabel>
-					<GameInput
-						value={reflection}
-						onChangeText={onChangeReflection}
-						placeholder="Built the first onboarding screen."
-						multiline
-					/>
-					<Text className="font-bold text-sm" style={{ color: colors.subtext }}>
-						One sentence. Proof first, reflection second.
-					</Text>
-				</View>
+			<GameCard accent="green">
+				<Text className="font-extrabold text-xl" style={{ color: colors.text }}>
+					One tap saves the artifact.
+				</Text>
+				<Text className="font-bold" style={{ color: colors.subtext }}>
+					Capture the receipt and turn it into a saved proof artifact.
+				</Text>
 			</GameCard>
 
 			<GameButton
 				accent="blue"
-				label="Submit Proof"
+				label={`Capture ${proofType}`}
 				disabled={!canSubmit}
 				onPress={onSubmit}
 			/>

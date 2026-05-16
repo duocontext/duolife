@@ -1,3 +1,4 @@
+import * as Clipboard from "expo-clipboard";
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useMemo, useState } from "react";
 import { buildGeneratedPosts } from "./data";
@@ -16,8 +17,7 @@ import type {
 const STORAGE_KEY = "duolife.demo.mvp.v1";
 
 const DEFAULT_MISSION_TITLE = "Build Duolife onboarding";
-const DEFAULT_PROOF_TARGET =
-	"Upload a 10-second screen recording of the onboarding flow.";
+const DEFAULT_PROOF_TARGET = "Proof required before this counts.";
 
 type DemoState = {
 	onboardingComplete: boolean;
@@ -55,6 +55,70 @@ function isVagueMission(title: string) {
 		(normalized.split(/\s+/).length < 3 ||
 			["work on duolife", "work on app", "build startup"].includes(normalized))
 	);
+}
+
+function getSuggestedProofType(missionTitle: string): ProofType {
+	const normalized = missionTitle.toLowerCase();
+
+	if (
+		/lesson|study|notes|problem|exam|quiz|read|course|boot\.?dev/.test(
+			normalized,
+		)
+	) {
+		return "Notes";
+	}
+
+	if (/post|content|thread|draft|publish|dm|outreach/.test(normalized)) {
+		return "Link";
+	}
+
+	if (/demo|video|record|walkthrough/.test(normalized)) {
+		return "Video/demo";
+	}
+
+	return "Screenshot";
+}
+
+function getProofTarget(input: { missionTitle: string; proofType: ProofType }) {
+	if (input.proofType === "Screenshot") {
+		return "Screenshot of the shipped result.";
+	}
+
+	if (input.proofType === "Video/demo") {
+		return "Short demo clip of the shipped result.";
+	}
+
+	if (input.proofType === "Notes") {
+		return "Notes or solved problem from the work session.";
+	}
+
+	if (input.proofType === "Link") {
+		return "Link to the shipped artifact, post, draft, or diff.";
+	}
+
+	return `Proof receipt for: ${input.missionTitle}.`;
+}
+
+function normalizeProofType(value: unknown): ProofType {
+	if (
+		value === "Screenshot" ||
+		value === "Video/demo" ||
+		value === "Notes" ||
+		value === "Link" ||
+		value === "Other"
+	) {
+		return value;
+	}
+
+	if (value === "Video" || value === "Commit" || value === "Figma") {
+		return "Video/demo";
+	}
+
+	if (value === "Text" || value === "Voice") {
+		return "Notes";
+	}
+
+	return "Other";
 }
 
 function getRank(input: {
@@ -105,7 +169,12 @@ function migrateState(value: unknown): DemoState {
 		...parsed,
 		currentMission: parsed.currentMission ?? null,
 		activeTimer: parsed.activeTimer ?? null,
-		proofHistory: Array.isArray(parsed.proofHistory) ? parsed.proofHistory : [],
+		proofHistory: Array.isArray(parsed.proofHistory)
+			? parsed.proofHistory.map((proof) => ({
+					...proof,
+					type: normalizeProofType((proof as Partial<Proof>).type),
+				}))
+			: [],
 		generatedPostSets: Array.isArray(parsed.generatedPostSets)
 			? parsed.generatedPostSets
 			: [],
@@ -115,8 +184,7 @@ function migrateState(value: unknown): DemoState {
 	});
 }
 
-function createTimer(mission: Mission): ActiveTimerState {
-	const startedAt = new Date();
+function createTimer(mission: Mission, startedAt: Date): ActiveTimerState {
 	const expiresAt = new Date(
 		startedAt.getTime() + mission.timeboxMinutes * 60 * 1000,
 	);
@@ -129,6 +197,23 @@ function createTimer(mission: Mission): ActiveTimerState {
 	};
 }
 
+function createSmallerMission(mission: Mission): Mission {
+	const createdAt = new Date().toISOString();
+
+	return {
+		...mission,
+		id: nowId("mission"),
+		status: "draft",
+		title: `Small proof: ${mission.title.replace(/^Small proof: /, "")}`,
+		proofTarget: "Screenshot of the smallest working proof.",
+		timeboxMinutes: 25,
+		createdAt,
+		startedAt: undefined,
+		completedAt: undefined,
+		postedAt: undefined,
+	};
+}
+
 export function useDemoGame() {
 	const [isHydrated, setIsHydrated] = useState(false);
 	const [todayMode, setTodayMode] = useState<TodayMode>("home");
@@ -136,8 +221,9 @@ export function useDemoGame() {
 	const [missionTitle, setMissionTitle] = useState(DEFAULT_MISSION_TITLE);
 	const [proofTarget, setProofTarget] = useState(DEFAULT_PROOF_TARGET);
 	const [timeboxMinutes, setTimeboxMinutes] = useState(60);
-	const [proofType, setProofType] = useState<ProofType>("Video");
-	const [proofContent, setProofContent] = useState("");
+	const [proofType, setProofType] = useState<ProofType>(
+		getSuggestedProofType(DEFAULT_MISSION_TITLE),
+	);
 	const [reflection, setReflection] = useState("");
 	const [selectedPostId, setSelectedPostId] = useState("x");
 	const [selectedBlocker, setSelectedBlocker] = useState("");
@@ -174,6 +260,7 @@ export function useDemoGame() {
 				selectedPostId: currentPostSet.selectedPostId,
 				copied: currentPostSet.copied,
 				markedPosted: currentPostSet.markedPosted,
+				lesson: currentPostSet.lesson,
 				createdAt: currentPostSet.createdAt,
 				postedAt: currentPostSet.postedAt,
 			}
@@ -183,24 +270,26 @@ export function useDemoGame() {
 		generatedPosts.find((post) => post.id === selectedPostId) ??
 		generatedPosts[0] ??
 		null;
+	const activeTimer =
+		mission?.status === "active" && state.activeTimer?.missionId === mission.id
+			? state.activeTimer
+			: null;
 
 	const remainingSeconds =
-		mission?.status === "active" && state.activeTimer
-			? Math.max(
-					0,
-					Math.ceil(
-						(new Date(state.activeTimer.expiresAt).getTime() - clockNow) / 1000,
-					),
-				)
+		mission?.status === "active"
+			? activeTimer
+				? Math.max(
+						0,
+						Math.ceil(
+							(new Date(activeTimer.expiresAt).getTime() - clockNow) / 1000,
+						),
+					)
+				: 0
 			: (mission?.timeboxMinutes ?? timeboxMinutes) * 60;
 
 	const missionIsVague = isVagueMission(missionTitle);
-	const missionCanSave =
-		missionTitle.trim().length > 0 &&
-		proofTarget.trim().length > 0 &&
-		timeboxMinutes > 0;
-	const proofCanSubmit =
-		proofContent.trim().length > 0 && reflection.trim().length > 0;
+	const missionCanSave = missionTitle.trim().length > 0 && timeboxMinutes > 0;
+	const proofCanSubmit = Boolean(mission);
 	const canFreeze = selectedBlocker.length > 0 && blockerNote.trim().length > 0;
 
 	const stats = useMemo<PlayerStats>(
@@ -259,7 +348,7 @@ export function useDemoGame() {
 	}, [isHydrated, state]);
 
 	useEffect(() => {
-		if (mission?.status !== "active" || !state.activeTimer) {
+		if (mission?.status !== "active" || !activeTimer) {
 			return;
 		}
 
@@ -268,7 +357,7 @@ export function useDemoGame() {
 		}, 1000);
 
 		return () => clearInterval(interval);
-	}, [mission?.status, state.activeTimer]);
+	}, [mission?.status, activeTimer]);
 
 	useEffect(() => {
 		if (currentPostSet) {
@@ -280,7 +369,7 @@ export function useDemoGame() {
 		if (
 			!isHydrated ||
 			mission?.status !== "active" ||
-			!state.activeTimer ||
+			!activeTimer ||
 			remainingSeconds > 0
 		) {
 			return;
@@ -289,15 +378,11 @@ export function useDemoGame() {
 		setState((current) =>
 			withRank({
 				...current,
-				currentMission: current.currentMission
-					? { ...current.currentMission, status: "frozen" }
-					: current.currentMission,
 				activeTimer: null,
-				frozenCount: current.frozenCount + 1,
 			}),
 		);
-		setTodayMode("run-it-back");
-	}, [isHydrated, mission?.status, remainingSeconds, state.activeTimer]);
+		setTodayMode("proof-upload");
+	}, [activeTimer, isHydrated, mission?.status, remainingSeconds]);
 
 	const openMissionBuilder = () => {
 		if (mission && mission.status !== "posted") {
@@ -308,16 +393,29 @@ export function useDemoGame() {
 			setMissionTitle(DEFAULT_MISSION_TITLE);
 			setProofTarget(DEFAULT_PROOF_TARGET);
 			setTimeboxMinutes(60);
+			setProofType(getSuggestedProofType(DEFAULT_MISSION_TITLE));
 		}
 
 		setTodayMode("mission-builder");
 	};
 
-	const startMission = (nextMission: Mission) => {
+	const startMission = (
+		nextMission: Mission,
+		nextProofType: ProofType = proofType,
+	) => {
+		const startedAt = new Date();
+
+		setProofType(nextProofType);
+		setClockNow(startedAt.getTime());
+
 		const activeMission: Mission = {
 			...nextMission,
+			proofTarget: getProofTarget({
+				missionTitle: nextMission.title,
+				proofType: nextProofType,
+			}),
 			status: "active",
-			startedAt: new Date().toISOString(),
+			startedAt: startedAt.toISOString(),
 		};
 
 		setState((current) =>
@@ -325,10 +423,9 @@ export function useDemoGame() {
 				...current,
 				onboardingComplete: true,
 				currentMission: activeMission,
-				activeTimer: createTimer(activeMission),
+				activeTimer: createTimer(activeMission, startedAt),
 			}),
 		);
-		setProofContent("");
 		setReflection("");
 		setTodayMode("sprint");
 	};
@@ -342,7 +439,7 @@ export function useDemoGame() {
 			id:
 				mission && mission.status !== "posted" ? mission.id : nowId("mission"),
 			title: missionTitle.trim(),
-			proofTarget: proofTarget.trim(),
+			proofTarget: proofTarget.trim() || DEFAULT_PROOF_TARGET,
 			timeboxMinutes,
 			status: "draft",
 			createdAt:
@@ -367,18 +464,20 @@ export function useDemoGame() {
 			return;
 		}
 
-		startMission({
+		const nextMission: Mission = {
 			id:
 				mission && mission.status !== "posted" ? mission.id : nowId("mission"),
 			title: missionTitle.trim(),
-			proofTarget: proofTarget.trim(),
+			proofTarget: proofTarget.trim() || DEFAULT_PROOF_TARGET,
 			timeboxMinutes,
 			status: "draft",
 			createdAt:
 				mission && mission.status !== "posted"
 					? mission.createdAt
 					: new Date().toISOString(),
-		});
+		};
+
+		startMission(nextMission, getSuggestedProofType(nextMission.title));
 	};
 
 	const shrinkMission = () => {
@@ -406,32 +505,39 @@ export function useDemoGame() {
 	};
 
 	const lockIn = () => {
-		if (!mission?.proofTarget || !mission.timeboxMinutes) {
+		if (!mission?.timeboxMinutes) {
 			return;
 		}
 
-		startMission(mission);
+		startMission(mission, getSuggestedProofType(mission.title));
 	};
 
 	const submitProof = () => {
-		if (!mission || !proofCanSubmit) {
+		if (!mission) {
 			return;
 		}
 
 		const createdAt = new Date().toISOString();
+		const content = `${proofType} captured for "${mission.title}" at ${new Date(
+			createdAt,
+		).toLocaleTimeString([], {
+			hour: "numeric",
+			minute: "2-digit",
+		})}.`;
 		const nextProof: Proof = {
 			id: nowId("proof"),
 			missionId: mission.id,
 			missionTitle: mission.title,
 			proofTarget: mission.proofTarget,
 			type: proofType,
-			content: proofContent.trim(),
+			content,
 			reflection: reflection.trim(),
 			createdAt,
 		};
 		const posts: GeneratedPost[] = buildGeneratedPosts({
 			missionTitle: mission.title,
-			proofReflection: nextProof.reflection,
+			proofType: nextProof.type,
+			lesson: nextProof.reflection,
 			identityType: "student founder",
 			goal: "building Duolife",
 		});
@@ -483,15 +589,35 @@ export function useDemoGame() {
 		);
 	};
 
-	const copyPost = () => {
+	const copyPost = async () => {
 		if (!selectedPost) {
 			return;
 		}
+
+		await Clipboard.setStringAsync(selectedPost.text);
 
 		updateCurrentPostSet((postSet) => ({
 			...postSet,
 			selectedPostId: selectedPost.id,
 			copied: true,
+		}));
+	};
+
+	const setPostLesson = (value: string) => {
+		if (!proof) {
+			return;
+		}
+
+		updateCurrentPostSet((postSet) => ({
+			...postSet,
+			lesson: value,
+			posts: buildGeneratedPosts({
+				missionTitle: proof.missionTitle,
+				proofType: proof.type,
+				lesson: value,
+				identityType: "student founder",
+				goal: "building Duolife",
+			}),
 		}));
 	};
 
@@ -551,22 +677,39 @@ export function useDemoGame() {
 		setTodayMode("home");
 	};
 
+	const buildSmallerMissionFromStop = () => {
+		if (!mission) {
+			return;
+		}
+
+		const nextMission = createSmallerMission(mission);
+
+		setMissionTitle(nextMission.title);
+		setProofTarget(nextMission.proofTarget);
+		setTimeboxMinutes(nextMission.timeboxMinutes);
+		setProofType(getSuggestedProofType(nextMission.title));
+		setReflection("");
+		setState((current) =>
+			withRank({
+				...current,
+				currentMission: nextMission,
+				activeTimer: null,
+			}),
+		);
+		setTodayMode("mission-builder");
+	};
+
 	const runItBack = () => {
 		if (!mission) {
 			return;
 		}
 
-		const nextMission: Mission = {
-			...mission,
-			status: "draft",
-			title: `Small proof: ${mission.title.replace(/^Small proof: /, "")}`,
-			proofTarget: "Screenshot of the smallest working proof.",
-			timeboxMinutes: 25,
-		};
+		const nextMission = createSmallerMission(mission);
 
 		setSelectedBlocker("");
 		setBlockerNote("");
-		startMission(nextMission);
+		setReflection("");
+		startMission(nextMission, getSuggestedProofType(nextMission.title));
 	};
 
 	const buildNextMission = () => {
@@ -580,9 +723,33 @@ export function useDemoGame() {
 		setMissionTitle(DEFAULT_MISSION_TITLE);
 		setProofTarget(DEFAULT_PROOF_TARGET);
 		setTimeboxMinutes(60);
-		setProofContent("");
+		setProofType(getSuggestedProofType(DEFAULT_MISSION_TITLE));
 		setReflection("");
 		setTodayMode("mission-builder");
+	};
+
+	const archiveProof = (proofId: string) => {
+		setState((current) =>
+			withRank({
+				...current,
+				proofHistory: current.proofHistory.map((item) =>
+					item.id === proofId
+						? { ...item, archivedAt: new Date().toISOString() }
+						: item,
+				),
+			}),
+		);
+	};
+
+	const restoreProof = (proofId: string) => {
+		setState((current) =>
+			withRank({
+				...current,
+				proofHistory: current.proofHistory.map((item) =>
+					item.id === proofId ? { ...item, archivedAt: undefined } : item,
+				),
+			}),
+		);
 	};
 
 	const resetTodayMode = () => {
@@ -602,7 +769,6 @@ export function useDemoGame() {
 		postState,
 		proof,
 		proofCanSubmit,
-		proofContent,
 		proofHistory: state.proofHistory,
 		proofTarget,
 		proofType,
@@ -614,6 +780,8 @@ export function useDemoGame() {
 		stats,
 		timeboxMinutes,
 		todayMode,
+		archiveProof,
+		buildSmallerMissionFromStop,
 		buildNextMission,
 		copyPost,
 		freezeStreak,
@@ -621,12 +789,13 @@ export function useDemoGame() {
 		markPosted,
 		openMissionBuilder,
 		resetTodayMode,
+		restoreProof,
 		runItBack,
 		saveMission,
 		saveMissionAndLockIn,
 		setBlockerNote,
 		setMissionTitle,
-		setProofContent,
+		setPostLesson,
 		setProofTarget,
 		setProofType,
 		setReflection,

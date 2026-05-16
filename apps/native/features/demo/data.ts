@@ -20,12 +20,10 @@ export const GOAL_OPTIONS: GoalType[] = [
 
 export const PROOF_TYPE_OPTIONS: ProofType[] = [
 	"Screenshot",
-	"Video",
+	"Video/demo",
+	"Notes",
 	"Link",
-	"Text",
-	"Voice",
-	"Commit",
-	"Figma",
+	"Other",
 ];
 
 export const TIMEBOX_OPTIONS = [25, 45, 60, 90] as const;
@@ -39,12 +37,10 @@ export const MISSION_EXAMPLES = [
 ];
 
 export const PROOF_EXAMPLES = [
-	"10-second screen recording",
-	"screenshot of finished screen",
-	"GitHub commit link",
-	"public post link",
-	"written summary",
-	"voice explanation",
+	"screenshot/demo clip",
+	"notes or solved problem",
+	"uploaded post or draft",
+	"link to the shipped artifact",
 ];
 
 export const FAILURE_REASONS = [
@@ -58,29 +54,32 @@ export const FAILURE_REASONS = [
 
 export function buildGeneratedPosts(input: {
 	missionTitle: string;
-	proofReflection: string;
+	proofType: ProofType;
+	lesson?: string;
 	identityType: string;
 	goal: string;
 }): GeneratedPost[] {
 	const identity = input.identityType || "student founder";
 	const goal = input.goal || "building in public";
-	const change = input.proofReflection || "moved the product forward";
+	const receipt = input.proofType.toLowerCase();
+	const lesson = input.lesson?.trim();
+	const lessonLine = lesson ? ` Lesson: ${lesson}.` : "";
 
 	return [
 		{
 			id: "x",
 			platform: "X post",
-			text: `Shipped proof today: ${input.missionTitle}. ${change}. Small loop, real evidence, back tomorrow.`,
+			text: `Shipped proof today: ${input.missionTitle}. Receipt: ${receipt}.${lessonLine} Small loop, real evidence, back tomorrow.`,
 		},
 		{
 			id: "story",
 			platform: "Instagram story",
-			text: `Today I locked in on ${input.missionTitle}. Proof shipped. Momentum claimed next.`,
+			text: `Locked in on ${input.missionTitle}. Proof captured as ${receipt}. Momentum claimed next.`,
 		},
 		{
 			id: "reel",
 			platform: "TikTok/Reel hook",
-			text: `I gave myself one proof target today: ${input.missionTitle}. Here is what changed.`,
+			text: `I gave myself one mission today: ${input.missionTitle}. Here is the ${receipt} that proves it.`,
 		},
 		{
 			id: "short",
@@ -90,7 +89,7 @@ export function buildGeneratedPosts(input: {
 		{
 			id: "doha",
 			platform: "Student founder in Doha",
-			text: `Building toward ${goal} from Doha. Today's proof: ${input.missionTitle}. ${change}.`,
+			text: `Building toward ${goal} from Doha. Today's proof: ${input.missionTitle}. Receipt: ${receipt}.${lessonLine}`,
 		},
 	];
 }
