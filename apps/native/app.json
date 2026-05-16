@@ -46,9 +46,10 @@
       },
       "package": "com.duocontext.app"
     },
+    "owner": "khaledmhirsi",
     "extra": {
       "eas": {
-        "projectId": "0031a987-6fad-4ba1-892b-e55eade2294e"
+        "projectId": "78637d78-bbf3-4a68-8208-df2487f93ef9"
       }
     }
   }
