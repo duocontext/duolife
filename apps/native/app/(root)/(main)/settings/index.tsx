@@ -1,12 +1,14 @@
 import { Button, Card } from "heroui-native";
 import { useState } from "react";
 import { Alert, ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Icon } from "@/components/icon";
 import { useUser } from "@/contexts/user-context";
 import { authClient } from "@/lib/auth-client";
 
 export default function SettingsRoute() {
+	const insets = useSafeAreaInsets();
 	const { user } = useUser();
 	const [isDeletingUser, setIsDeletingUser] = useState(false);
 
@@ -33,7 +35,8 @@ export default function SettingsRoute() {
 	return (
 		<ScrollView
 			contentInsetAdjustmentBehavior="always"
-			contentContainerClassName="flex-grow px-4 py-2 gap-4"
+			contentContainerClassName="flex-grow px-4 pt-2 gap-4"
+			contentContainerStyle={{ paddingBottom: insets.bottom + 68 }}
 		>
 			{/* User Info */}
 			<Card variant="secondary">

@@ -9,6 +9,7 @@ import {
 	View,
 	type ViewStyle,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon } from "@/components/icon";
 import { useAppTheme } from "@/contexts/app-theme-context";
 
@@ -128,10 +129,16 @@ export function useLifeTheme() {
 }
 
 export function GameScreen({ children }: { children: ReactNode }) {
+	const insets = useSafeAreaInsets();
+
 	return (
 		<ScrollView
 			showsVerticalScrollIndicator={false}
-			contentContainerClassName="gap-5 pb-8 pt-4"
+			contentContainerClassName="gap-5 pt-4"
+			contentContainerStyle={{
+				flexGrow: 1,
+				paddingBottom: insets.bottom + 68,
+			}}
 		>
 			{children}
 		</ScrollView>
