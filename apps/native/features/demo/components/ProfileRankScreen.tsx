@@ -3,10 +3,10 @@ import {
 	GameButton,
 	GameCard,
 	GameScreen,
-	lifeColors,
 	ScreenHeader,
 	SectionLabel,
 	StatusPill,
+	useLifeTheme,
 } from "@/components/game-ui";
 import { Icon } from "@/components/icon";
 import type { PlayerStats, RecentProof } from "../types";
@@ -24,6 +24,8 @@ export function ProfileRankScreen({
 	onBack,
 	onReturnToday,
 }: ProfileRankScreenProps) {
+	const { colors } = useLifeTheme();
+
 	return (
 		<GameScreen>
 			<ScreenHeader
@@ -36,15 +38,15 @@ export function ProfileRankScreen({
 				<View className="items-center gap-4 py-3">
 					<View
 						className="h-24 w-24 items-center justify-center rounded-full"
-						style={{ backgroundColor: lifeColors.goldSoft }}
+						style={{ backgroundColor: colors.goldSoft }}
 					>
-						<Icon name="trophy-outline" size={44} color={lifeColors.goldDark} />
+						<Icon name="trophy-outline" size={44} color={colors.goldDark} />
 					</View>
 					<View className="items-center gap-1">
 						<SectionLabel>Current rank</SectionLabel>
 						<Text
 							className="text-center font-extrabold text-3xl"
-							style={{ color: lifeColors.text }}
+							style={{ color: colors.text }}
 						>
 							{stats.rank}
 						</Text>
@@ -72,12 +74,12 @@ export function ProfileRankScreen({
 						<View
 							key={item.id}
 							className="gap-2 rounded-[18px] p-4"
-							style={{ backgroundColor: lifeColors.bg }}
+							style={{ backgroundColor: colors.bg }}
 						>
 							<View className="flex-row items-center justify-between gap-3">
 								<Text
 									className="flex-1 font-extrabold text-base"
-									style={{ color: lifeColors.text }}
+									style={{ color: colors.text }}
 								>
 									{item.title}
 								</Text>
@@ -92,7 +94,7 @@ export function ProfileRankScreen({
 									label={item.status}
 								/>
 							</View>
-							<Text className="font-bold" style={{ color: lifeColors.subtext }}>
+							<Text className="font-bold" style={{ color: colors.subtext }}>
 								{item.text}
 							</Text>
 						</View>
@@ -106,19 +108,18 @@ export function ProfileRankScreen({
 }
 
 function StatCard({ label, value }: { label: string; value: string }) {
+	const { colors } = useLifeTheme();
+
 	return (
 		<View className="min-w-[47%] flex-1">
 			<GameCard className="gap-1" style={{ minHeight: 112 }}>
 				<Text
 					className="font-extrabold text-3xl"
-					style={{ color: lifeColors.text }}
+					style={{ color: colors.text }}
 				>
 					{value}
 				</Text>
-				<Text
-					className="font-bold text-sm"
-					style={{ color: lifeColors.subtext }}
-				>
+				<Text className="font-bold text-sm" style={{ color: colors.subtext }}>
 					{label}
 				</Text>
 			</GameCard>

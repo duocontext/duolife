@@ -5,10 +5,10 @@ import {
 	GameCard,
 	GameInput,
 	GameScreen,
-	lifeColors,
 	ScreenHeader,
 	SectionLabel,
 	StatusPill,
+	useLifeTheme,
 } from "@/components/game-ui";
 import { Icon } from "@/components/icon";
 import { PROOF_TYPE_OPTIONS } from "../data";
@@ -39,6 +39,8 @@ export function ProofUploadScreen({
 	onSelectProofType,
 	onSubmit,
 }: ProofUploadScreenProps) {
+	const { colors } = useLifeTheme();
+
 	return (
 		<GameScreen>
 			<ScreenHeader
@@ -50,19 +52,19 @@ export function ProofUploadScreen({
 			<GameCard accent="blue">
 				<View
 					className="gap-2 rounded-[20px] p-4"
-					style={{ backgroundColor: lifeColors.proofBlueSoft }}
+					style={{ backgroundColor: colors.proofBlueSoft }}
 				>
 					<View className="flex-row items-center gap-2">
 						<Icon
 							name="shield-checkmark-outline"
 							size={20}
-							color={lifeColors.proofBlue}
+							color={colors.proofBlue}
 						/>
 						<SectionLabel>Proof Required</SectionLabel>
 					</View>
 					<Text
 						className="font-extrabold text-lg"
-						style={{ color: lifeColors.text }}
+						style={{ color: colors.text }}
 					>
 						{mission.proofTarget}
 					</Text>
@@ -96,14 +98,14 @@ export function ProofUploadScreen({
 					{proofContent.trim() ? (
 						<View
 							className="gap-2 rounded-[18px] p-4"
-							style={{ backgroundColor: lifeColors.greenSoft }}
+							style={{ backgroundColor: colors.greenSoft }}
 						>
 							<StatusPill
 								accent="green"
 								icon="checkmark-outline"
 								label="Preview"
 							/>
-							<Text className="font-bold" style={{ color: lifeColors.text }}>
+							<Text className="font-bold" style={{ color: colors.text }}>
 								{proofContent}
 							</Text>
 						</View>
@@ -120,10 +122,7 @@ export function ProofUploadScreen({
 						placeholder="Built the first onboarding screen."
 						multiline
 					/>
-					<Text
-						className="font-bold text-sm"
-						style={{ color: lifeColors.subtext }}
-					>
+					<Text className="font-bold text-sm" style={{ color: colors.subtext }}>
 						One sentence. Proof first, reflection second.
 					</Text>
 				</View>

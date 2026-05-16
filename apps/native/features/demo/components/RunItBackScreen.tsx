@@ -5,9 +5,9 @@ import {
 	GameCard,
 	GameInput,
 	GameScreen,
-	lifeColors,
 	ScreenHeader,
 	SectionLabel,
+	useLifeTheme,
 } from "@/components/game-ui";
 import { FAILURE_REASONS } from "../data";
 import type { Mission } from "../types";
@@ -35,6 +35,8 @@ export function RunItBackScreen({
 	onRunItBack,
 	onSelectBlocker,
 }: RunItBackScreenProps) {
+	const { colors } = useLifeTheme();
+
 	return (
 		<GameScreen>
 			<ScreenHeader
@@ -44,16 +46,10 @@ export function RunItBackScreen({
 			/>
 
 			<GameCard accent="red">
-				<Text
-					className="font-extrabold text-xl"
-					style={{ color: lifeColors.text }}
-				>
+				<Text className="font-extrabold text-xl" style={{ color: colors.text }}>
 					You did not ship proof in time.
 				</Text>
-				<Text
-					className="font-bold text-base"
-					style={{ color: lifeColors.text }}
-				>
+				<Text className="font-bold text-base" style={{ color: colors.text }}>
 					Upload failure proof to protect your streak, or run it back now.
 				</Text>
 			</GameCard>

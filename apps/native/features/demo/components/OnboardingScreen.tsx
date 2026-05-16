@@ -1,21 +1,25 @@
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 import {
 	type AccentName,
-	ChoiceCard,
-	ChoiceChip,
 	GameButton,
 	GameCard,
 	GameInput,
 	GameScreen,
-	lifeColors,
 	ScreenHeader,
 	SectionLabel,
 	StatusPill,
+	useLifeTheme,
 } from "@/components/game-ui";
 import { GOAL_OPTIONS, IDENTITY_OPTIONS, PROOF_TYPE_OPTIONS } from "../data";
 import type { GoalType, IdentityType, ProofType, SetupContext } from "../types";
+import {
+	AnimatedChoiceCard,
+	choiceFeedbackDelayMs,
+	StepProgressDots,
+	StepTransition,
+} from "./DuolingoMotion";
 
 type OnboardingStep = "identity" | "goal" | "proof" | "confirm";
 
@@ -35,17 +39,43 @@ export function OnboardingScreen({
 	onUpdateSetup,
 }: OnboardingScreenProps) {
 	const [step, setStep] = useState<OnboardingStep>("identity");
+	const stepTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const { colors } = useLifeTheme();
 	const selectedIdentity = getIdentityLabel(setup);
 	const selectedGoal = getGoalLabel(setup);
 	const selectedProofType = setup.preferredProofTypes[0] ?? "";
 	const currentStep = steps.findIndex((item) => item.key === step) + 1;
 
+	useEffect(() => {
+		return () => {
+			if (stepTimerRef.current) {
+				clearTimeout(stepTimerRef.current);
+			}
+		};
+	}, []);
+
+	const clearPendingStepChange = () => {
+		if (stepTimerRef.current) {
+			clearTimeout(stepTimerRef.current);
+			stepTimerRef.current = null;
+		}
+	};
+
 	const goToStep = (nextStep: OnboardingStep) => {
+		clearPendingStepChange();
+
 		if (nextStep === step) {
 			return;
 		}
 
 		setStep(nextStep);
+	};
+
+	const goToStepAfterFeedback = (nextStep: OnboardingStep) => {
+		clearPendingStepChange();
+		stepTimerRef.current = setTimeout(() => {
+			goToStep(nextStep);
+		}, choiceFeedbackDelayMs);
 	};
 
 	const handleBack = () => {
@@ -63,7 +93,7 @@ export function OnboardingScreen({
 		onUpdateSetup({ identityType });
 
 		if (identityType !== "Custom") {
-			goToStep("goal");
+			goToStepAfterFeedback("goal");
 		}
 	};
 
@@ -71,13 +101,13 @@ export function OnboardingScreen({
 		onUpdateSetup({ goal });
 
 		if (goal !== "Custom") {
-			goToStep("proof");
+			goToStepAfterFeedback("proof");
 		}
 	};
 
 	const selectProofType = (proofType: ProofType) => {
 		onUpdateSetup({ preferredProofTypes: [proofType] });
-		goToStep("confirm");
+		goToStepAfterFeedback("confirm");
 	};
 
 	return (
@@ -88,138 +118,142 @@ export function OnboardingScreen({
 				onBack={handleBack}
 			/>
 
-			<ProgressDots activeStep={step} />
+			<StepProgressDots activeStep={step} steps={steps} />
 
 			<View className="gap-4">
-				{step === "identity" ? (
-					<StepCard
-						accent="green"
-						kicker="Identity"
-						title="What are you trying to become?"
-						subtitle="Pick the role this app should push you toward."
-					>
-						{IDENTITY_OPTIONS.map((option) => (
-							<ChoiceCard
-								key={option}
-								label={option}
-								selected={setup.identityType === option}
-								onPress={() => selectIdentity(option)}
-							/>
-						))}
-						{setup.identityType === "Custom" ? (
-							<View className="gap-3">
-								<GameInput
-									value={setup.customIdentity}
-									onChangeText={(customIdentity) =>
-										onUpdateSetup({ customIdentity })
-									}
-									placeholder="Student founder in Doha"
-								/>
-								<GameButton
-									label="Next"
-									disabled={setup.customIdentity.trim().length === 0}
-									onPress={() => goToStep("goal")}
-								/>
-							</View>
-						) : null}
-					</StepCard>
-				) : null}
-
-				{step === "goal" ? (
-					<StepCard
-						accent="blue"
-						kicker="Target"
-						title="What are you building toward right now?"
-						subtitle="Choose one direction. The mission builder will make it smaller next."
-					>
-						{GOAL_OPTIONS.map((option) => (
-							<ChoiceCard
-								accent="blue"
-								key={option}
-								label={option}
-								selected={setup.goal === option}
-								onPress={() => selectGoal(option)}
-							/>
-						))}
-						{setup.goal === "Custom" ? (
-							<View className="gap-3">
-								<GameInput
-									value={setup.customGoal}
-									onChangeText={(customGoal) => onUpdateSetup({ customGoal })}
-									placeholder="Ship the first paid MVP"
-								/>
-								<GameButton
-									label="Next"
-									disabled={setup.customGoal.trim().length === 0}
-									onPress={() => goToStep("proof")}
-								/>
-							</View>
-						) : null}
-					</StepCard>
-				) : null}
-
-				{step === "proof" ? (
-					<StepCard
-						accent="green"
-						kicker="Proof"
-						title="What proof can you ship fastest?"
-						subtitle="Pick one evidence type for the first mission."
-					>
-						<View className="flex-row flex-wrap gap-2">
-							{PROOF_TYPE_OPTIONS.map((option) => (
-								<ProofOption
+				<StepTransition stepKey={step}>
+					{step === "identity" ? (
+						<StepCard
+							accent="green"
+							kicker="Identity"
+							title="What are you trying to become?"
+							subtitle="Pick the role this app should push you toward."
+						>
+							{IDENTITY_OPTIONS.map((option) => (
+								<AnimatedChoiceCard
 									key={option}
 									label={option}
-									selected={selectedProofType === option}
-									onPress={() => selectProofType(option)}
+									selected={setup.identityType === option}
+									onPress={() => selectIdentity(option)}
 								/>
 							))}
-						</View>
-					</StepCard>
-				) : null}
+							{setup.identityType === "Custom" ? (
+								<View className="gap-3">
+									<GameInput
+										value={setup.customIdentity}
+										onChangeText={(customIdentity) =>
+											onUpdateSetup({ customIdentity })
+										}
+										placeholder="Student founder in Doha"
+									/>
+									<GameButton
+										label="Next"
+										disabled={setup.customIdentity.trim().length === 0}
+										onPress={() => goToStep("goal")}
+									/>
+								</View>
+							) : null}
+						</StepCard>
+					) : null}
 
-				{step === "confirm" ? (
-					<GameCard accent="green">
-						<View className="gap-5">
-							<View className="gap-2">
-								<StatusPill
+					{step === "goal" ? (
+						<StepCard
+							accent="blue"
+							kicker="Target"
+							title="What are you building toward right now?"
+							subtitle="Choose one direction. The mission builder will make it smaller next."
+						>
+							{GOAL_OPTIONS.map((option) => (
+								<AnimatedChoiceCard
 									accent="blue"
-									icon="shield-checkmark-outline"
-									label="Confirm your loop"
+									key={option}
+									label={option}
+									selected={setup.goal === option}
+									onPress={() => selectGoal(option)}
 								/>
-								<Text
-									className="font-extrabold text-2xl"
-									style={{ color: lifeColors.text }}
-								>
-									Ready to build today's mission?
-								</Text>
-								<Text
-									className="font-bold"
-									style={{ color: lifeColors.subtext }}
-								>
-									Duolife will turn this into one mission, one proof target, and
-									one shipping loop.
-								</Text>
+							))}
+							{setup.goal === "Custom" ? (
+								<View className="gap-3">
+									<GameInput
+										value={setup.customGoal}
+										onChangeText={(customGoal) => onUpdateSetup({ customGoal })}
+										placeholder="Ship the first paid MVP"
+									/>
+									<GameButton
+										label="Next"
+										disabled={setup.customGoal.trim().length === 0}
+										onPress={() => goToStep("proof")}
+									/>
+								</View>
+							) : null}
+						</StepCard>
+					) : null}
+
+					{step === "proof" ? (
+						<StepCard
+							accent="green"
+							kicker="Proof"
+							title="What proof can you ship fastest?"
+							subtitle="Pick one evidence type for the first mission."
+						>
+							<View className="flex-row flex-wrap gap-2">
+								{PROOF_TYPE_OPTIONS.map((option) => (
+									<AnimatedChoiceCard
+										accent="blue"
+										key={option}
+										label={option}
+										selected={selectedProofType === option}
+										variant="pill"
+										onPress={() => selectProofType(option)}
+									/>
+								))}
 							</View>
-							<View className="gap-3">
-								<SummaryRow label="You are becoming" value={selectedIdentity} />
-								<SummaryRow
-									label="You are building toward"
-									value={selectedGoal}
-								/>
-								<SummaryRow
-									label="First proof type"
-									value={selectedProofType}
+						</StepCard>
+					) : null}
+
+					{step === "confirm" ? (
+						<GameCard accent="green">
+							<View className="gap-5">
+								<View className="gap-2">
+									<StatusPill
+										accent="blue"
+										icon="shield-checkmark-outline"
+										label="Confirm your loop"
+									/>
+									<Text
+										className="font-extrabold text-2xl"
+										style={{ color: colors.text }}
+									>
+										Ready to build today's mission?
+									</Text>
+									<Text className="font-bold" style={{ color: colors.subtext }}>
+										Duolife will turn this into one mission, one proof target,
+										and one shipping loop.
+									</Text>
+								</View>
+								<View className="gap-3">
+									<SummaryRow
+										label="You are becoming"
+										value={selectedIdentity}
+									/>
+									<SummaryRow
+										label="You are building toward"
+										value={selectedGoal}
+									/>
+									<SummaryRow
+										label="First proof type"
+										value={selectedProofType}
+									/>
+								</View>
+								<GameButton
+									label="Create Today's Mission"
+									disabled={!canContinue}
+									onPress={onContinue}
 								/>
 							</View>
-							<GameButton
-								label="Create Today's Mission"
-								disabled={!canContinue}
-								onPress={onContinue}
-							/>
-						</View>
-					</GameCard>
-				) : null}
+						</GameCard>
+					) : null}
+				</StepTransition>
 			</View>
 		</GameScreen>
 	);
@@ -238,17 +272,19 @@ function StepCard({
 	subtitle: string;
 	title: string;
 }) {
+	const { colors } = useLifeTheme();
+
 	return (
 		<GameCard accent={accent}>
 			<View className="gap-1">
 				<SectionLabel>{kicker}</SectionLabel>
 				<Text
 					className="font-extrabold text-2xl"
-					style={{ color: lifeColors.text }}
+					style={{ color: colors.text }}
 				>
 					{title}
 				</Text>
-				<Text className="font-bold" style={{ color: lifeColors.subtext }}>
+				<Text className="font-bold" style={{ color: colors.subtext }}>
 					{subtitle}
 				</Text>
 			</View>
@@ -257,63 +293,26 @@ function StepCard({
 	);
 }
 
-function ProofOption({
-	label,
-	selected,
-	onPress,
-}: {
-	label: ProofType;
-	selected: boolean;
-	onPress: () => void;
-}) {
-	return (
-		<ChoiceChip
-			accent="blue"
-			label={label}
-			selected={selected}
-			onPress={onPress}
-		/>
-	);
-}
-
-function ProgressDots({ activeStep }: { activeStep: OnboardingStep }) {
-	return (
-		<View className="flex-row gap-2">
-			{steps.map((stepItem) => {
-				const isActive = stepItem.key === activeStep;
-
-				return (
-					<View
-						key={stepItem.key}
-						className="h-3 flex-1 rounded-full"
-						style={{
-							backgroundColor: isActive ? lifeColors.green : lifeColors.line,
-						}}
-					/>
-				);
-			})}
-		</View>
-	);
-}
-
 function SummaryRow({ label, value }: { label: string; value: string }) {
+	const { colors } = useLifeTheme();
+
 	return (
 		<View
 			className="rounded-[18px] border-2 p-4"
 			style={{
-				backgroundColor: lifeColors.card,
-				borderColor: lifeColors.line,
+				backgroundColor: colors.card,
+				borderColor: colors.line,
 			}}
 		>
 			<Text
 				className="font-extrabold text-xs uppercase"
-				style={{ color: lifeColors.subtext }}
+				style={{ color: colors.subtext }}
 			>
 				{label}
 			</Text>
 			<Text
 				className="mt-1 font-extrabold text-lg"
-				style={{ color: lifeColors.text }}
+				style={{ color: colors.text }}
 			>
 				{value || "Not picked yet"}
 			</Text>

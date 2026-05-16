@@ -1,5 +1,5 @@
 import type { ComponentProps, ReactNode } from "react";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import {
 	Pressable,
 	ScrollView,
@@ -10,6 +10,7 @@ import {
 	type ViewStyle,
 } from "react-native";
 import { Icon } from "@/components/icon";
+import { useAppTheme } from "@/contexts/app-theme-context";
 
 export const lifeColors = {
 	green: "#58CC02",
@@ -40,46 +41,91 @@ export const lifeColors = {
 	disabledBg: "#E5E5E5",
 };
 
+const darkLifeColors: typeof lifeColors = {
+	green: "#58CC02",
+	greenDark: "#46A302",
+	greenSoft: "#163B1B",
+	proofBlue: "#1CB0F6",
+	proofBlueDark: "#168DCA",
+	proofBlueSoft: "#113448",
+	postPurple: "#CE82FF",
+	postPurpleDark: "#A96ED1",
+	postPurpleSoft: "#382343",
+	gold: "#FFC800",
+	goldDark: "#D9A900",
+	goldSoft: "#403613",
+	orange: "#FF9600",
+	orangeDark: "#D97800",
+	orangeSoft: "#412B12",
+	red: "#FF4B4B",
+	redDark: "#D83E3E",
+	redSoft: "#411D22",
+	bg: "#101214",
+	card: "#1B1D21",
+	line: "#30343A",
+	lineDark: "#25282E",
+	text: "#F5F7FA",
+	subtext: "#AEB6C2",
+	disabled: "#7C838F",
+	disabledBg: "#2A2D33",
+};
+
 type Accent = {
 	color: string;
 	edge: string;
 	soft: string;
 };
 
-export const accents = {
-	green: {
-		color: lifeColors.green,
-		edge: lifeColors.greenDark,
-		soft: lifeColors.greenSoft,
-	},
-	blue: {
-		color: lifeColors.proofBlue,
-		edge: lifeColors.proofBlueDark,
-		soft: lifeColors.proofBlueSoft,
-	},
-	purple: {
-		color: lifeColors.postPurple,
-		edge: lifeColors.postPurpleDark,
-		soft: lifeColors.postPurpleSoft,
-	},
-	gold: {
-		color: lifeColors.gold,
-		edge: lifeColors.goldDark,
-		soft: lifeColors.goldSoft,
-	},
-	orange: {
-		color: lifeColors.orange,
-		edge: lifeColors.orangeDark,
-		soft: lifeColors.orangeSoft,
-	},
-	red: {
-		color: lifeColors.red,
-		edge: lifeColors.redDark,
-		soft: lifeColors.redSoft,
-	},
-} satisfies Record<string, Accent>;
+function createAccents(colors: typeof lifeColors) {
+	return {
+		green: {
+			color: colors.green,
+			edge: colors.greenDark,
+			soft: colors.greenSoft,
+		},
+		blue: {
+			color: colors.proofBlue,
+			edge: colors.proofBlueDark,
+			soft: colors.proofBlueSoft,
+		},
+		purple: {
+			color: colors.postPurple,
+			edge: colors.postPurpleDark,
+			soft: colors.postPurpleSoft,
+		},
+		gold: {
+			color: colors.gold,
+			edge: colors.goldDark,
+			soft: colors.goldSoft,
+		},
+		orange: {
+			color: colors.orange,
+			edge: colors.orangeDark,
+			soft: colors.orangeSoft,
+		},
+		red: {
+			color: colors.red,
+			edge: colors.redDark,
+			soft: colors.redSoft,
+		},
+	} satisfies Record<string, Accent>;
+}
 
+export const accents = createAccents(lifeColors);
 export type AccentName = keyof typeof accents;
+
+export function useLifeTheme() {
+	const { isDark } = useAppTheme();
+	const colors = isDark ? darkLifeColors : lifeColors;
+
+	return useMemo(
+		() => ({
+			accents: createAccents(colors),
+			colors,
+		}),
+		[colors],
+	);
+}
 
 export function GameScreen({ children }: { children: ReactNode }) {
 	return (
@@ -103,11 +149,13 @@ export function ScreenHeader({
 	right?: ReactNode;
 	onBack?: () => void;
 }) {
+	const { colors } = useLifeTheme();
+
 	return (
 		<View className="gap-4">
 			{onBack ? (
 				<Pressable onPress={onBack} hitSlop={24}>
-					<Text style={{ color: lifeColors.text }} className="text-lg">
+					<Text style={{ color: colors.text }} className="text-lg">
 						Back
 					</Text>
 				</Pressable>
@@ -116,14 +164,14 @@ export function ScreenHeader({
 				<View className="flex-1 gap-1">
 					{eyebrow ? (
 						<Text
-							style={{ color: lifeColors.subtext }}
+							style={{ color: colors.subtext }}
 							className="font-bold text-sm"
 						>
 							{eyebrow}
 						</Text>
 					) : null}
 					<Text
-						style={{ color: lifeColors.text }}
+						style={{ color: colors.text }}
 						className="font-extrabold text-4xl"
 					>
 						{title}
@@ -146,16 +194,18 @@ export function GameCard({
 	className?: string;
 	style?: ViewStyle;
 }) {
+	const { accents: themeAccents, colors } = useLifeTheme();
+
 	return (
 		<View
 			className={`gap-4 rounded-[28px] border-2 p-5 ${className}`}
 			style={[
 				{
-					backgroundColor: lifeColors.card,
-					borderColor: accent ? accents[accent].color : lifeColors.line,
+					backgroundColor: colors.card,
+					borderColor: accent ? themeAccents[accent].color : colors.line,
 					borderBottomColor: accent
-						? accents[accent].edge
-						: lifeColors.lineDark,
+						? themeAccents[accent].edge
+						: colors.lineDark,
 					borderBottomWidth: 5,
 				},
 				style,
@@ -179,7 +229,8 @@ export function GameButton({
 	disabled?: boolean;
 	onPress: () => void;
 }) {
-	const tone = accents[accent];
+	const { accents: themeAccents, colors } = useLifeTheme();
+	const tone = themeAccents[accent];
 	const isPrimary = variant === "primary";
 
 	return (
@@ -194,21 +245,21 @@ export function GameButton({
 				borderRadius: 16,
 				borderWidth: 2,
 				borderColor: disabled
-					? lifeColors.disabledBg
+					? colors.disabledBg
 					: isPrimary
 						? tone.color
-						: lifeColors.line,
+						: colors.line,
 				borderBottomColor: disabled
-					? lifeColors.disabled
+					? colors.disabled
 					: isPrimary
 						? tone.edge
-						: lifeColors.lineDark,
+						: colors.lineDark,
 				borderBottomWidth: pressed && !disabled ? 2 : 5,
 				backgroundColor: disabled
-					? lifeColors.disabledBg
+					? colors.disabledBg
 					: isPrimary
 						? tone.color
-						: lifeColors.card,
+						: colors.card,
 				transform: [{ translateY: pressed && !disabled ? 3 : 0 }],
 			})}
 		>
@@ -216,7 +267,7 @@ export function GameButton({
 				className="text-center font-extrabold text-base"
 				style={{
 					color: disabled
-						? lifeColors.disabled
+						? colors.disabled
 						: isPrimary
 							? "#FFFFFF"
 							: tone.color,
@@ -239,20 +290,21 @@ export function ChoiceChip({
 	accent?: AccentName;
 	onPress: () => void;
 }) {
-	const tone = accents[accent];
+	const { accents: themeAccents, colors } = useLifeTheme();
+	const tone = themeAccents[accent];
 
 	return (
 		<Pressable
 			onPress={onPress}
 			className="rounded-full border-2 px-4 py-3"
 			style={{
-				backgroundColor: selected ? tone.soft : lifeColors.card,
-				borderColor: selected ? tone.color : lifeColors.line,
+				backgroundColor: selected ? tone.soft : colors.card,
+				borderColor: selected ? tone.color : colors.line,
 			}}
 		>
 			<Text
 				className="font-bold text-sm"
-				style={{ color: selected ? lifeColors.text : lifeColors.subtext }}
+				style={{ color: selected ? colors.text : colors.subtext }}
 			>
 				{label}
 			</Text>
@@ -273,33 +325,31 @@ export function ChoiceCard({
 	icon?: ComponentProps<typeof Icon>["name"];
 	onPress: () => void;
 }) {
-	const tone = accents[accent];
+	const { accents: themeAccents, colors } = useLifeTheme();
+	const tone = themeAccents[accent];
 
 	return (
 		<Pressable
 			onPress={onPress}
 			className="flex-row items-center gap-3 rounded-[20px] border-2 p-4"
 			style={{
-				backgroundColor: selected ? tone.soft : lifeColors.card,
-				borderColor: selected ? tone.color : lifeColors.line,
-				borderBottomColor: selected ? tone.edge : lifeColors.lineDark,
+				backgroundColor: selected ? tone.soft : colors.card,
+				borderColor: selected ? tone.color : colors.line,
+				borderBottomColor: selected ? tone.edge : colors.lineDark,
 				borderBottomWidth: 4,
 			}}
 		>
 			<View
 				className="h-10 w-10 items-center justify-center rounded-full"
-				style={{ backgroundColor: selected ? tone.color : lifeColors.bg }}
+				style={{ backgroundColor: selected ? tone.color : colors.bg }}
 			>
 				<Icon
 					name={icon}
 					size={20}
-					color={selected ? "#FFFFFF" : lifeColors.subtext}
+					color={selected ? "#FFFFFF" : colors.subtext}
 				/>
 			</View>
-			<Text
-				className="flex-1 font-extrabold"
-				style={{ color: lifeColors.text }}
-			>
+			<Text className="flex-1 font-extrabold" style={{ color: colors.text }}>
 				{label}
 			</Text>
 		</Pressable>
@@ -307,10 +357,12 @@ export function ChoiceCard({
 }
 
 export function SectionLabel({ children }: { children: ReactNode }) {
+	const { colors } = useLifeTheme();
+
 	return (
 		<Text
 			className="font-extrabold text-sm uppercase"
-			style={{ color: lifeColors.subtext }}
+			style={{ color: colors.subtext }}
 		>
 			{children}
 		</Text>
@@ -320,6 +372,7 @@ export function SectionLabel({ children }: { children: ReactNode }) {
 export function GameInput(props: TextInputProps) {
 	const inputRef = useRef<TextInput>(null);
 	const isMultiline = Boolean(props.multiline);
+	const { colors } = useLifeTheme();
 
 	return (
 		<Pressable
@@ -327,8 +380,8 @@ export function GameInput(props: TextInputProps) {
 			onPress={() => inputRef.current?.focus()}
 			className="rounded-[18px] border-2 px-4"
 			style={{
-				backgroundColor: lifeColors.card,
-				borderColor: lifeColors.line,
+				backgroundColor: colors.card,
+				borderColor: colors.line,
 				justifyContent: isMultiline ? "flex-start" : "center",
 				minHeight: isMultiline ? 96 : 58,
 				paddingVertical: isMultiline ? 16 : 0,
@@ -338,11 +391,11 @@ export function GameInput(props: TextInputProps) {
 				{...props}
 				ref={inputRef}
 				multiline={props.multiline}
-				placeholderTextColor={lifeColors.disabled}
+				placeholderTextColor={colors.disabled}
 				className="font-bold text-base"
 				style={[
 					{
-						color: lifeColors.text,
+						color: colors.text,
 						height: isMultiline ? undefined : 24,
 						includeFontPadding: false,
 						lineHeight: 22,
@@ -368,7 +421,8 @@ export function StatusPill({
 	accent?: AccentName;
 	icon?: ComponentProps<typeof Icon>["name"];
 }) {
-	const tone = accents[accent];
+	const { accents: themeAccents, colors } = useLifeTheme();
+	const tone = themeAccents[accent];
 
 	return (
 		<View
@@ -376,10 +430,7 @@ export function StatusPill({
 			style={{ backgroundColor: tone.soft }}
 		>
 			{icon ? <Icon name={icon} size={15} color={tone.color} /> : null}
-			<Text
-				className="font-extrabold text-xs"
-				style={{ color: lifeColors.text }}
-			>
+			<Text className="font-extrabold text-xs" style={{ color: colors.text }}>
 				{label}
 			</Text>
 		</View>

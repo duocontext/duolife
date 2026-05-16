@@ -3,10 +3,10 @@ import {
 	GameButton,
 	GameCard,
 	GameScreen,
-	lifeColors,
 	ScreenHeader,
 	SectionLabel,
 	StatusPill,
+	useLifeTheme,
 } from "@/components/game-ui";
 import { Icon } from "@/components/icon";
 import type { Mission, PlayerStats } from "../types";
@@ -33,6 +33,7 @@ export function QuestHomeScreen({
 	onViewProfile,
 }: QuestHomeScreenProps) {
 	const canLockIn = Boolean(mission?.proofTarget && mission?.timeboxMinutes);
+	const { colors } = useLifeTheme();
 
 	return (
 		<GameScreen>
@@ -63,7 +64,7 @@ export function QuestHomeScreen({
 							<SectionLabel>Mission</SectionLabel>
 							<Text
 								className="font-extrabold text-3xl"
-								style={{ color: lifeColors.text }}
+								style={{ color: colors.text }}
 							>
 								{mission.title}
 							</Text>
@@ -71,19 +72,19 @@ export function QuestHomeScreen({
 
 						<View
 							className="gap-2 rounded-[20px] p-4"
-							style={{ backgroundColor: lifeColors.proofBlueSoft }}
+							style={{ backgroundColor: colors.proofBlueSoft }}
 						>
 							<View className="flex-row items-center gap-2">
 								<Icon
 									name="shield-checkmark-outline"
 									size={20}
-									color={lifeColors.proofBlue}
+									color={colors.proofBlue}
 								/>
 								<SectionLabel>Proof Required</SectionLabel>
 							</View>
 							<Text
 								className="font-extrabold text-lg"
-								style={{ color: lifeColors.text }}
+								style={{ color: colors.text }}
 							>
 								{mission.proofTarget}
 							</Text>
@@ -133,13 +134,13 @@ export function QuestHomeScreen({
 					<View className="items-center gap-4 py-8">
 						<View
 							className="h-24 w-24 items-center justify-center rounded-full"
-							style={{ backgroundColor: lifeColors.greenSoft }}
+							style={{ backgroundColor: colors.greenSoft }}
 						>
-							<Icon name="flag-outline" size={42} color={lifeColors.green} />
+							<Icon name="flag-outline" size={42} color={colors.green} />
 						</View>
 						<Text
 							className="text-center font-extrabold text-2xl"
-							style={{ color: lifeColors.text }}
+							style={{ color: colors.text }}
 						>
 							Pick one mission. Make the proof tiny enough to ship today.
 						</Text>
@@ -159,17 +160,19 @@ export function QuestHomeScreen({
 }
 
 function StreakPill({ streak }: { streak: number }) {
+	const { colors } = useLifeTheme();
+
 	return (
 		<View
 			className="flex-row items-center gap-2 rounded-full px-4 py-3"
 			style={{
-				backgroundColor: lifeColors.gold,
-				borderBottomColor: lifeColors.goldDark,
+				backgroundColor: colors.gold,
+				borderBottomColor: colors.goldDark,
 				borderBottomWidth: 4,
 			}}
 		>
-			<Icon name="flame-outline" size={20} color={lifeColors.text} />
-			<Text className="font-extrabold" style={{ color: lifeColors.text }}>
+			<Icon name="flame-outline" size={20} color={colors.text} />
+			<Text className="font-extrabold" style={{ color: colors.text }}>
 				{streak}
 			</Text>
 		</View>

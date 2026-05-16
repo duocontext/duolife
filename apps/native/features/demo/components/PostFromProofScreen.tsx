@@ -4,10 +4,10 @@ import {
 	GameButton,
 	GameCard,
 	GameScreen,
-	lifeColors,
 	ScreenHeader,
 	SectionLabel,
 	StatusPill,
+	useLifeTheme,
 } from "@/components/game-ui";
 import type { GeneratedPost, Mission, PostState, Proof } from "../types";
 
@@ -37,6 +37,7 @@ export function PostFromProofScreen({
 	const selectedPost =
 		generatedPosts.find((post) => post.id === selectedPostId) ??
 		generatedPosts[0];
+	const { colors } = useLifeTheme();
 
 	return (
 		<GameScreen>
@@ -51,11 +52,11 @@ export function PostFromProofScreen({
 					<SectionLabel>Proof Preview</SectionLabel>
 					<Text
 						className="font-extrabold text-xl"
-						style={{ color: lifeColors.text }}
+						style={{ color: colors.text }}
 					>
 						{mission.title}
 					</Text>
-					<Text className="font-bold" style={{ color: lifeColors.text }}>
+					<Text className="font-bold" style={{ color: colors.text }}>
 						{proof.content}
 					</Text>
 					<StatusPill
@@ -83,13 +84,13 @@ export function PostFromProofScreen({
 					{selectedPost ? (
 						<View
 							className="gap-2 rounded-[20px] p-4"
-							style={{ backgroundColor: lifeColors.postPurpleSoft }}
+							style={{ backgroundColor: colors.postPurpleSoft }}
 						>
 							<StatusPill accent="purple" label={selectedPost.platform} />
 							<Text
 								selectable
 								className="font-bold text-base"
-								style={{ color: lifeColors.text }}
+								style={{ color: colors.text }}
 							>
 								{selectedPost.text}
 							</Text>
@@ -102,7 +103,7 @@ export function PostFromProofScreen({
 				<GameCard accent="orange">
 					<Text
 						className="font-extrabold text-base"
-						style={{ color: lifeColors.text }}
+						style={{ color: colors.text }}
 					>
 						Proof shipped. Momentum not claimed yet.
 					</Text>

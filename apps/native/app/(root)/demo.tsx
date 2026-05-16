@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { View } from "react-native";
-import { lifeColors } from "@/components/game-ui";
+import { useLifeTheme } from "@/components/game-ui";
 import { LockInSprintScreen } from "@/features/demo/components/LockInSprintScreen";
 import { MissionBuilderScreen } from "@/features/demo/components/MissionBuilderScreen";
 import { OnboardingScreen } from "@/features/demo/components/OnboardingScreen";
@@ -14,11 +14,12 @@ import { useDemoGame } from "@/features/demo/useDemoGame";
 export default function DemoRoute() {
 	const router = useRouter();
 	const game = useDemoGame();
+	const { colors } = useLifeTheme();
 
 	return (
 		<View
 			className="flex-1 px-5 pt-safe pb-safe"
-			style={{ backgroundColor: lifeColors.bg }}
+			style={{ backgroundColor: colors.bg }}
 		>
 			{game.screen === "onboarding" ? (
 				<OnboardingScreen
